@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-    "lib": ["es6", "dom"],
+    "lib": ["es6", "dom","ES2021.String"],
     "module": "commonjs",
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "noImplicitAny": true,
     "outDir": "dist",
     "sourceMap": true,

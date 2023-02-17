@@ -1,7 +1,7 @@
-import chalk = require('chalk');
+import chalk from 'chalk';
 import * as sql from 'mssql';
-import * as multimatch from 'multimatch';
-import ora = require('ora');
+import multimatch from 'multimatch';
+import ora from 'ora';
 
 import Config from '../common/config';
 import FileUtility from '../common/file-utility';
@@ -110,6 +110,7 @@ export default class Pull {
       })
       .then((results) => this.writeFiles(config, results))
       .catch((error) => {
+        console.error(error);
         this.spinner.fail(error);
       });
   }
@@ -160,37 +161,36 @@ export default class Pull {
 
         file.write(config.output.procs, name, content);
       });
-
-    // views
-    objects
+      // views
+      objects
       .filter((item) => item.type.trim() === 'V')
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
         const content = generator.view(item);
-
+        
         file.write(config.output.views, name, content);
       });
-
-    // functions
-    objects
+      
+      // functions
+      objects
       .filter((item) => ['TF', 'IF', 'FN'].indexOf(item.type.trim()) !== -1)
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
         const content = generator.function(item);
-
+        
         file.write(config.output.functions, name, content);
       });
-
+      
     // triggers
     objects
-      .filter((item) => item.type.trim() === 'TR')
-      .forEach((item) => {
-        const name = `${item.schema}.${item.name}.sql`;
-        const content = generator.trigger(item);
-
-        file.write(config.output.triggers, name, content);
-      });
-
+    .filter((item) => item.type.trim() === 'TR')
+    .forEach((item) => {
+      const name = `${item.schema}.${item.name}.sql`;
+      const content = generator.trigger(item);
+      
+      file.write(config.output.triggers, name, content);
+    });
+    
     // tables
     tables.forEach((item) => {
       const name = `${item.schema}.${item.name}.sql`;
@@ -200,48 +200,48 @@ export default class Pull {
         primaryKeys,
         foreignKeys,
         indexes
-      );
-
-      file.write(config.output.tables, name, content);
-    });
-
-    // types
-    types
+        );
+        
+        file.write(config.output.tables, name, content);
+      });
+      
+      // types
+      types
       .filter((item) => !item.type)
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
         const content = generator.type(item);
-
+        
         file.write(config.output.types, name, content);
       });
-
-    // table types
-    types
+      
+      // table types
+      types
       .filter((item) => item.type && item.type.trim() === 'TT')
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
         const content = generator.tableType(item, columns);
-
+        
         file.write(config.output.types, name, content);
       });
-
-    // data
-    data.forEach((item) => {
-      const name = `${item.schema}.${item.name}.sql`;
-      const content = generator.data(item);
-
-      file.write(config.output.data, name, content);
-    });
-
-    // jobs
-    jobs.forEach((item) => {
-      const steps = jobSteps.filter((x) => x.job_id === item.job_id);
-      const schedules = jobSchedules.filter((x) => x.job_id === item.job_id);
-      const name = `${item.name}.sql`;
-      const content = generator.job(item, steps, schedules);
-
-      file.write(config.output.jobs, name, content);
-    });
+      
+      // data
+      data.forEach((item) => {
+        const name = `${item.schema}.${item.name}.sql`;
+        const content = generator.data(item);
+        
+        file.write(config.output.data, name, content);
+      });
+      
+      // jobs
+      jobs.forEach((item) => {
+        const steps = jobSteps.filter((x) => x.job_id === item.job_id);
+        const schedules = jobSchedules.filter((x) => x.job_id === item.job_id);
+        const name = `${item.name}.sql`;
+        const content = generator.job(item, steps, schedules);
+        
+        file.write(config.output.jobs, name, content);
+      });
 
     const msg = file.finalize();
     this.spinner.succeed(msg);

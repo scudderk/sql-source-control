@@ -1,10 +1,10 @@
-import chalk = require('chalk');
-import * as checksum from 'checksum';
+import chalk from 'chalk';
+import checksum from 'checksum';
 import * as eol from 'eol';
-import filenamify = require('filenamify');
+import filenamify from 'filenamify';
 import * as fs from 'fs-extra';
 import * as glob from 'glob';
-import * as multimatch from 'multimatch';
+import multimatch from 'multimatch';
 import * as path from 'path';
 
 import Cache from './cache';

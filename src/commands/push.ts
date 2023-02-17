@@ -1,9 +1,9 @@
-import chalk = require('chalk');
+import chalk from 'chalk';
 import * as fs from 'fs-extra';
 import * as glob from 'glob';
 import * as inquirer from 'inquirer';
 import * as sql from 'mssql';
-import ora = require('ora');
+import ora from 'ora';
 import { EOL } from 'os';
 
 import Config from '../common/config';
@@ -24,25 +24,24 @@ export default class Push {
   invoke() {
     const config = new Config(this.options.config);
     const conn = config.getConnection(this.name);
-
-    return inquirer
-      .prompt<inquirer.Answers>([
-        {
-          message: [
-            `${chalk.yellow(
-              'WARNING!'
-            )} All local SQL files will be executed against the requested database.`,
-            'This can not be undone!',
-            'Make sure to backup your database first.',
-            EOL,
-            'Are you sure you want to continue?',
-          ].join(' '),
-          name: 'continue',
-          type: 'confirm',
-          when: !this.options.skip,
-        },
-      ])
-      .then((answers) => {
+    const prompt = inquirer.createPromptModule();
+    return prompt<inquirer.Answers>([
+      {
+        message: [
+          `${chalk.yellow(
+            'WARNING!'
+          )} All local SQL files will be executed against the requested database.`,
+          'This can not be undone!',
+          'Make sure to backup your database first.',
+          EOL,
+          'Are you sure you want to continue?',
+        ].join(' '),
+        name: 'continue',
+        type: 'confirm',
+        when: !this.options.skip,
+      },
+    ])
+      .then((answers: inquirer.Answers) => {
         if (answers.continue === false) {
           throw new Error('Command aborted!');
         }
@@ -51,8 +50,8 @@ export default class Push {
       .then(() => {
         this.spinner.succeed('Successfully pushed!');
       })
-      .catch((error) => {
-        this.spinner.fail(error);
+      .catch((error: Error) => {
+        this.spinner.fail(error.message);
       });
   }
 

@@ -1,4 +1,4 @@
-import * as mock from 'mock-fs';
+import mock from 'mock-fs';
 import Config from './config';
 import Connection from './connection';
 import { IConnection, IdempotencyConfig, OutputConfig } from './interfaces';

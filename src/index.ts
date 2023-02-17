@@ -1,10 +1,12 @@
-import * as program from 'commander';
-import * as updateNotifier from 'update-notifier';
+const { program } = require('commander');
+import updateNotifier from 'update-notifier';
 
 import pkg = require('../package.json');
 import Init from './commands/init';
+import { InitOptions, ListOptions, PullOptions, PullSingleOptions, PushOptions } from './commands/interfaces';
 import List from './commands/list';
 import Pull from './commands/pull';
+import PullSingle from './commands/pull-single';
 import Push from './commands/push';
 
 async function main() {
@@ -14,7 +16,7 @@ async function main() {
     .option('-f, --force', 'Overwrite existing config file, if present.')
     .option('-s, --skip', 'Use defaults only and skip the option prompts.')
     .option('-w, --webconfig [value]', 'Relative path to Web.config file.')
-    .action((options) => {
+    .action((options: InitOptions) => {
       const action = new Init(options);
       return action.invoke();
     });
@@ -24,7 +26,7 @@ async function main() {
     .alias('ls')
     .description('List all available connections.')
     .option('-c, --config [value]', 'Relative path to config file.')
-    .action((options) => {
+    .action((options: ListOptions) => {
       const action = new List(options);
       return action.invoke();
     });
@@ -35,7 +37,7 @@ async function main() {
       'Generate SQL files for all tables, stored procedures, functions, etc.'
     )
     .option('-c, --config [value]', 'Relative path to config file.')
-    .action((name, options) => {
+    .action((name: string, options: PullOptions) => {
       const action = new Pull(name, options);
       return action.invoke();
     });
@@ -45,7 +47,7 @@ async function main() {
     .description('Execute all scripts against the requested database.')
     .option('-c, --config [value]', 'Relative path to config file.')
     .option('-s, --skip', 'Skip user warning prompt.')
-    .action((name, options) => {
+    .action((name: string, options: PushOptions) => {
       const action = new Push(name, options);
       return action.invoke();
     });

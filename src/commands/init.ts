@@ -33,9 +33,8 @@ export default class Init {
       Config.write({ connections: this.options.webconfig || [conn] });
       return;
     }
-
-    return inquirer
-      .prompt(this.getQuestions(conn, !!webConfigConns))
+    const prompt = inquirer.createPromptModule();
+    return prompt(this.getQuestions(conn, !!webConfigConns))
       .then((answers) => this.writeFiles(answers));
   }
 
