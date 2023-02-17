@@ -1,5 +1,5 @@
 {
-  "name": "sql-source-control",
+  "name": "sql-source-control-psl",
   "version": "3.0.0",
   "description": "Simple CLI for getting SQL into source control systems.",
   "keywords": [
@@ -16,13 +16,13 @@
     "url": "https://justinlettau.com"
   },
   "license": "MIT",
-  "homepage": "https://github.com/justinlettau/sql-source-control",
+  "homepage": "https://github.com/PalomaSystems/sql-source-control",
   "repository": {
     "type": "git",
-    "url": "https://github.com/justinlettau/sql-source-control"
+    "url": "https://github.com/PalomaSystems/sql-source-control"
   },
   "bugs": {
-    "url": "https://github.com/justinlettau/sql-source-control/issues"
+    "url": "https://github.com/PalomaSystems/sql-source-control/issues"
   },
   "preferGlobal": true,
   "scripts": {
