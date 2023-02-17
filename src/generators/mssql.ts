@@ -12,6 +12,7 @@ import {
   SqlJobSchedule,
   SqlJobStep,
   SqlObject,
+  SqlPermissions,
   SqlPrimaryKey,
   SqlSchema,
   SqlTable,
@@ -131,6 +132,17 @@ export default class MSSQLGenerator {
         output += EOL;
         output += 'GO';
         output += EOL;
+        output += EOL;
+        output += `SET ANSI_NULLS ON`;
+        output += EOL;
+        output += `GO`;
+        output += EOL;
+        output += EOL;
+        output += `SET QUOTED_IDENTIFIER ON`;
+        output += EOL;
+        output += `GO`;
+        output += EOL;
+        output += EOL;
         break;
       case 'if-not-exists':
         output += `IF NOT EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('${objectId}') AND type = '${type}')`;
@@ -138,7 +150,69 @@ export default class MSSQLGenerator {
         break;
     }
 
-    output += item.text;
+    output += this.formatSQL(item.text);
+    
+    return output;
+  }
+
+  formatSQL(text: string) {
+    text = text.trim()
+    text = text.replaceAll('create procedure', 'CREATE PROCEDURE');
+    text = text.replaceAll('set nocount on', 'SET NOCOUNT ON');
+    text = text.replaceAll('select', 'SELECT');
+    text = text.replaceAll('distinct', 'DISTINCT');
+    text = text.replaceAll('month', 'MONTH');
+    text = text.replaceAll('year', 'YEAR');
+    text = text.replaceAll('datename', 'DATENAME');
+    text = text.replaceAll('from', 'FROM');
+    text = text.replaceAll('begin', 'BEGIN');
+    text = text.replaceAll('update', 'UPDATE');
+    text = text.replaceAll('set', 'SET');
+    text = text.replaceAll('declare', 'DECLARE');
+    text = text.replaceAll('if ', 'IF ');
+    text = text.replaceAll(' as ', ' AS ');
+    text = text.replaceAll(' on ', ' ON ');
+    text = text.replaceAll('where', 'WHERE');
+    text = text.replaceAll('case', 'CASE');
+    text = text.replaceAll('when', 'WHEN');
+    text = text.replaceAll('then', 'THEN');
+    text = text.replaceAll('else', 'ELSE');
+    text = text.replaceAll('exists', 'EXISTS');
+    text = text.replaceAll('count', 'COUNT');
+    text = text.replaceAll('cast', 'CAST');
+    text = text.replaceAll('convert', 'CONVERT');
+    text = text.replaceAll('inner join', 'INNER JOIN');
+    text = text.replaceAll('left join', 'LEFT JOIN');
+    text = text.replaceAll('right join', 'RIGHT JOIN');
+    text = text.replaceAll('outer join', 'OUTER JOIN');
+    text = text.replaceAll('order', 'ORDER');
+    text = text.replaceAll('group', 'GROUP');
+    text = text.replaceAll(' by ', ' BY ');
+    text = text.replaceAll('and ', 'AND ');
+    text = text.replaceAll(' or ', ' OR ');
+    text = text.replaceAll('isnull', 'ISNULL');
+    text = text.replaceAll('is null', 'IS NULL');
+    text = text.replaceAll('is not null', 'IS NOT NULL');
+    text = text.replaceAll('int', 'INT');
+    text = text.replaceAll('varchar', 'VARCHAR');
+    text = text.replaceAll(' bit ', ' BIT ');
+    text = text.replaceAll('datetime', 'DATETIME');
+
+    return text
+  }
+
+  permissions(item: SqlPermissions[], name: string) {
+    let output = EOL;
+    output += EOL;
+
+    for (let i = 0; i < item.length; i++) {
+      const element = item[i];
+      output += `GRANT EXECUTE ON [${name}] TO [${element.principal_name}]`;
+      output += EOL;
+      output += `GO`;
+      output += EOL;
+      output += EOL;
+    }
 
     return output;
   }

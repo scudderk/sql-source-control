@@ -211,6 +211,22 @@ export const objectsRead = `
 `;
 
 /**
+ * Get SQL information for permissions
+ */
+export const permissionsRead = `
+  SELECT dp.NAME AS principal_name
+  FROM sys.database_permissions p
+  LEFT JOIN sys.all_objects o
+    ON p.major_id = o.OBJECT_ID
+  INNER JOIN sys.database_principals dp
+    ON p.grantee_principal_id = dp.principal_id
+  WHERE dp.type_desc = 'DATABASE_ROLE'
+    AND dp.name NOT IN ('public')
+  GROUP BY dp.name
+  ORDER BY dp.name
+`;
+
+/**
  * Get SQL information for jobs.
  */
 export const jobsRead = (database: string) => `

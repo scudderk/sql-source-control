@@ -179,3 +179,9 @@ export interface SqlJobSchedule {
   active_start_time: number;
   active_end_time: number;
 }
+/**
+ * SQL permissions.
+ */
+export interface SqlPermissions extends AbstractSqlObject {
+  principal_name: string;
+}

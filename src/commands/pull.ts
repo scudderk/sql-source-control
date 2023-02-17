@@ -18,6 +18,7 @@ import {
   SqlPrimaryKey,
   SqlTable,
   SqlType,
+  SqlPermissions,
 } from '../queries/interfaces';
 import {
   columnsRead,
@@ -27,6 +28,7 @@ import {
   jobsRead,
   jobStepsRead,
   objectsRead,
+  permissionsRead,
   primaryKeysRead,
   tablesRead,
   typesRead,
@@ -73,6 +75,7 @@ export default class Pull {
         } else {
           queries.push(null, null, null);
         }
+        queries.push(pool.request().query(permissionsRead));
 
         return Promise.all<sql.IResult<any>>(queries)
           .then((results) => {
@@ -135,7 +138,10 @@ export default class Pull {
     const jobSchedules: SqlJobSchedule[] = results[9]
       ? results[9].recordset
       : [];
-    const data: SqlDataResult[] = results.slice(10);
+    const permissions: SqlPermissions[] = results[10].recordset
+      ? results[10].recordset
+      : [];
+    const data: SqlDataResult[] = results.slice(11);
 
     const generator = new MSSQLGenerator(config);
     const file = new FileUtility(config);
@@ -156,8 +162,9 @@ export default class Pull {
     objects
       .filter((item) => item.type.trim() === 'P')
       .forEach((item) => {
-        const name = `${item.schema}.${item.name}.sql`;
-        const content = generator.storedProcedure(item);
+        const name = `${item.name}.sql`;
+        let content = generator.storedProcedure(item);
+        content += generator.permissions(permissions, name);
 
         file.write(config.output.procs, name, content);
       });
