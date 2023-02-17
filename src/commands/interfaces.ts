@@ -22,6 +22,15 @@ export interface PullOptions {
 }
 
 /**
+ * CLI arguments for `pull-single` command.
+ */
+export interface PullSingleOptions {
+  config?: string;
+  objname: string;
+  type: string;
+}
+
+/**
  * CLI arguments for `push` command.
  */
 export interface PushOptions {

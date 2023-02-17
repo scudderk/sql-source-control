@@ -158,7 +158,29 @@ export default class Config implements IConfig {
    * Line ending character.
    */
   eol: 'auto' | 'crlf' | 'lf' = 'auto';
-
+  /**
+   * Defines path of root directory.
+   */
+  root: './';
+  /**
+   * Defines version number used to store updated scripts.
+   */
+  currentVersion: '0.0.0';
+  /**
+   * Defines paths where updated files will be scripted during the `pull` command.
+   */
+  outputUpdated: {
+    data: 'data';
+    functions: 'functions';
+    jobs: 'jobs';
+    procs: 'stored-procedures';
+    root: '_sql-database';
+    schemas: 'schemas';
+    tables: 'tables';
+    triggers: 'triggers';
+    types: 'types';
+    views: 'views';
+  };
   /**
    * Get root output directory.
    */
@@ -181,7 +203,6 @@ export default class Config implements IConfig {
     const conns: Connection[] = this.getConnections();
     let conn: Connection;
     let error: string;
-
     if (name) {
       conn = conns.find(
         (item) => item.name.toLocaleLowerCase() === name.toLowerCase()
@@ -244,6 +265,7 @@ export default class Config implements IConfig {
       this.includeConstraintName =
         config.includeConstraintName || this.includeConstraintName;
       this.eol = config.eol || this.eol;
+      this.currentVersion = config.currentVersion || this.currentVersion;
     } catch (error) {
       console.error(
         'Could not find or parse config file. You can use the `init` command to create one!'

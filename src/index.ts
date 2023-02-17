@@ -43,6 +43,19 @@ async function main() {
     });
 
   program
+    .command('pull-single [name]')
+    .description(
+      'Generate SQL files for a specific table, stored procedure, function, etc.'
+    )
+    .option('-c, --config [value]', 'Relative path to config file.')
+    .requiredOption('-o, --objname [value]', 'Name of object you wish to pull.')
+    .requiredOption('-t, --type [value]', 'Type of object you wish to pull.')
+    .action((name: string, options: PullSingleOptions) => {
+      const action = new PullSingle(name, options);
+      return action.invoke();
+    });
+
+  program
     .command('push [name]')
     .description('Execute all scripts against the requested database.')
     .option('-c, --config [value]', 'Relative path to config file.')

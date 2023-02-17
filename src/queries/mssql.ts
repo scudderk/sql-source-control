@@ -211,6 +211,45 @@ export const objectsRead = `
 `;
 
 /**
+ * Get SQL information for procs, triggers, functions, etc.
+ */
+export const objectRead = (type: string, name: string) => {
+  return `
+  SELECT
+    so.name,
+    s.name AS [schema],
+    so.type AS [type],
+    STUFF
+    (
+      (
+        SELECT
+          CAST(sc_inner.text AS varchar(max))
+        FROM
+          sys.objects so_inner
+          INNER JOIN syscomments sc_inner ON sc_inner.id = so_inner.object_id
+          INNER JOIN sys.schemas s_inner ON s_inner.schema_id = so_inner.schema_id
+        WHERE
+          so_inner.name = so.name
+          AND s_inner.name = s.name
+        FOR XML PATH(''), TYPE
+      ).value('(./text())[1]', 'varchar(max)')
+      ,1
+      ,0
+      ,''
+    ) AS [text]
+  FROM
+    sys.objects so
+    INNER JOIN syscomments sc ON sc.id = so.object_id AND so.type in ('P', 'V', 'TF', 'IF', 'FN', 'TR')
+    INNER JOIN sys.schemas s ON s.schema_id = so.schema_id
+  WHERE so.type = '${type}' AND so.name = '${name}'
+  GROUP BY
+    so.name,
+    s.name,
+    so.type
+`;
+};
+
+/**
  * Get SQL information for permissions
  */
 export const permissionsRead = `
