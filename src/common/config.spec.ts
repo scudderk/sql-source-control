@@ -12,7 +12,6 @@ describe('Config class', () => {
   const password = 'qwerty';
   const connection: IConnection = {
     database,
-    name,
     password,
     port,
     server,

@@ -20,7 +20,8 @@ export interface OperationCounts {
  * Configuration object properties.
  */
 export interface IConfig {
-  connections: string | IConnection[];
+  settings?: string | ISetting[];
+  connections?: string | IConnection[];
   files?: string[];
   data?: string[];
   output?: OutputConfig;
@@ -31,12 +32,23 @@ export interface IConfig {
  * Connection object properties.
  */
 export interface IConnection {
-  name: string;
   server: string;
   database: string;
   port?: number;
   user: string;
   password: string;
+}
+
+/**
+ * setting object properties.
+ */
+export interface ISetting {
+  name: string;
+  connection: IConnection;
+  output: OutputConfig;
+  idempotency: IdempotencyConfig;
+  includeConstraintName: boolean;
+  currentVersion: string;
 }
 
 /**

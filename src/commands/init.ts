@@ -129,7 +129,6 @@ export default class Init {
   private writeFiles(answers: inquirer.Answers) {
     const conn: IConnection = {
       database: answers.database,
-      name: answers.name,
       password: answers.password,
       port: answers.port,
       server: answers.server,

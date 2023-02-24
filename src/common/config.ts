@@ -5,6 +5,7 @@ import * as xml2js from 'xml2js';
 
 import Connection from './connection';
 import { IConfig, IdempotencyConfig, OutputConfig } from './interfaces';
+import Setting from './setting';
 
 /**
  * Configuration options.
@@ -66,6 +67,7 @@ export default class Config implements IConfig {
     );
     const parser = new xml2js.Parser();
     const conns: Connection[] = [];
+    const setts: Setting[] = [];
 
     if (!fs.existsSync(configFile)) {
       // not found, use defaults
@@ -86,6 +88,8 @@ export default class Config implements IConfig {
 
         connectionStrings.forEach((item) => {
           const conn = new Connection();
+          const sett = new Setting();
+          sett.loadFromString(item.$.name, item.$.connectionString);
           conn.loadFromString(item.$.name, item.$.connectionString);
           conns.push(conn);
         });
@@ -108,6 +112,8 @@ export default class Config implements IConfig {
    * Relative path to a `Web.config`, a file with an array of connections, or an array of connections
    */
   connections: string | Connection[] = [];
+
+  settings: string | Setting[] = [];
 
   /**
    * Glob of files to include/exclude during the `pull` command.
@@ -201,6 +207,7 @@ export default class Config implements IConfig {
    */
   getConnection(name?: string): Connection {
     const conns: Connection[] = this.getConnections();
+
     let conn: Connection;
     let error: string;
     if (name) {
@@ -227,6 +234,39 @@ export default class Config implements IConfig {
   }
 
   /**
+   * Get a setting by name, or the first available if `name` is not provided.
+   *
+   * @param name Optional connection `name` to get.
+   */
+  getSetting(name?: string): Setting {
+    const setts: Setting[] = this.getSettings();
+
+    let sett: Setting;
+    let error: string;
+    if (name) {
+      sett = setts.find(
+        (item) => item.name.toLocaleLowerCase() === name.toLowerCase()
+      );
+      error = `Could not find settings by name '${name}'!`;
+    } else {
+      sett = setts[0];
+      error = 'Could not find default setting!';
+    }
+
+    if (!sett) {
+      console.error(error);
+      process.exit();
+    }
+
+    return Object.assign(sett, {
+      options: {
+        // https://github.com/tediousjs/tedious/releases/tag/v7.0.0
+        enableArithAbort: true,
+      },
+    });
+  }
+
+  /**
    * Safely get all connections.
    */
   getConnections() {
@@ -244,6 +284,23 @@ export default class Config implements IConfig {
   }
 
   /**
+   * Safely get all settings.
+   */
+  getSettings() {
+    if (!isString(this.settings)) {
+      return this.settings;
+    }
+
+    //const configFile = /\.config$/;
+
+    //if (configFile.test(this.settings)) {
+    //  return Config.getSettingsFromWebConfig(this.settings);
+    //} else {
+      return this.getSettingsFromJson(this.settings);
+    //}
+  }
+
+  /**
    * Load configuration options from file.
    *
    * @param file Configuration file to load.
@@ -256,8 +313,9 @@ export default class Config implements IConfig {
 
     try {
       const config: Config = fs.readJsonSync(configFile);
-
+      console.group(config)
       this.connections = config.connections || this.connections;
+      this.settings = config.settings || this.settings;
       this.data = config.data || this.data;
       this.files = config.files || this.files;
       Object.assign(this.output, config.output);
@@ -287,6 +345,23 @@ export default class Config implements IConfig {
       return config.connections as Connection[];
     } catch (error) {
       console.error('Could not find or parse connections config file!');
+      process.exit();
+    }
+  }
+
+  /**
+   * Safely get settings from a JSON file.
+   *
+   * @param file Relative path to settings JSON file.
+   */
+  private getSettingsFromJson(file: string) {
+    const jsonFile = path.join(process.cwd(), file);
+
+    try {
+      const config: Config = fs.readJsonSync(jsonFile);
+      return config.settings as Setting[];
+    } catch (error) {
+      console.error('Could not find or parse settings config file!');
       process.exit();
     }
   }

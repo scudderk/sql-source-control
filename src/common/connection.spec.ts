@@ -54,7 +54,6 @@ describe('Connection class', () => {
       const conn = new Connection();
       conn.loadFromObject({
         database,
-        name,
         password,
         port,
         server,

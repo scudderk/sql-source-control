@@ -48,14 +48,14 @@ export default class PullSingle {
    */
   invoke() {
     const config = new Config(this.options.config);
-    const conn = config.getConnection(this.name);
+    const sett = config.getSetting(this.name);
 
     this.spinner.start(
-      `Pulling ${this.options.objname} from ${chalk.blue(conn.server)} ...`
+      `Pulling ${this.options.objname} from ${chalk.blue(sett.connection.server)} ...`
     );
 
     // connect to db
-    return new sql.ConnectionPool(conn)
+    return new sql.ConnectionPool(sett.connection)
       .connect()
       .then((pool) => {
         const queries: any[] = [

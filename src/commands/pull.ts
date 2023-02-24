@@ -48,12 +48,12 @@ export default class Pull {
    */
   invoke() {
     const config = new Config(this.options.config);
-    const conn = config.getConnection(this.name);
+    const sett = config.getSetting(this.name);
 
-    this.spinner.start(`Pulling from ${chalk.blue(conn.server)} ...`);
+    this.spinner.start(`Pulling from ${chalk.blue(sett.connection.server)} ...`);
 
     // connect to db
-    return new sql.ConnectionPool(conn)
+    return new sql.ConnectionPool(sett.connection)
       .connect()
       .then((pool) => {
         const queries: any[] = [
@@ -68,8 +68,8 @@ export default class Pull {
 
         if (config.output.jobs) {
           queries.push(
-            pool.request().query(jobsRead(conn.database)),
-            pool.request().query(jobStepsRead(conn.database)),
+            pool.request().query(jobsRead(sett.connection.database)),
+            pool.request().query(jobStepsRead(sett.connection.database)),
             pool.request().query(jobSchedulesRead())
           );
         } else {
@@ -250,6 +250,7 @@ export default class Pull {
         file.write(config.output.jobs, name, content);
       });
 
+    //file.writeUpdate();
     const msg = file.finalize();
     this.spinner.succeed(msg);
   }
