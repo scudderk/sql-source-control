@@ -1,5 +1,6 @@
 import chalk from 'chalk';
-import * as sql from 'mssql';
+import sql from 'mssql';
+const sql1 =  require('mssql');
 import multimatch from 'multimatch';
 import ora from 'ora';
 
@@ -43,6 +44,13 @@ export default class PullSingle {
    */
   private spinner = ora();
 
+
+
+  invoke_test() {
+    const config = new Config(this.options.config);
+    const sett = config.getSetting(this.name);
+  }
+
   /**
    * Invoke action.
    */
@@ -54,37 +62,61 @@ export default class PullSingle {
       `Pulling ${this.options.objname} from ${chalk.blue(sett.connection.server)} ...`
     );
 
+    //async () => {
+      console.dir('szajt')
+      try {
+        // make sure that any items are correctly URL encoded in the connection string
+        let pool = await sql.connect(sett.connection);
+        let result = await pool.request()
+          .query(`select * from Colease`)
+        console.dir(result)
+      } catch (err) {
+        console.error('szajt')
+      }
+    //}
+    sql1.on('error', err => {
+      console.error('szajt')
+      console.error(err);
+    })
+
+
+
+
+
+
     // connect to db
-    return new sql.ConnectionPool(sett.connection)
-      .connect()
-      .then((pool) => {
-        const queries: any[] = [
-          pool
-            .request()
-            .query(objectRead(this.options.type, this.options.objname)),
-          pool.request().query(permissionsRead),
-        ];
-        return Promise.all<sql.IResult<any>>(queries)
-          .then((results) => {
-            const tables: sql.IRecordSet<SqlTable> = results[1].recordset;
-            const names = tables.map((item) => `${item.schema}.${item.name}`);
+    // return new sql.ConnectionPool(sett.connection)
+    //   .connect()
+    //   .then((pool) => {
+    //     console.log(pool);
 
-            const matched = multimatch(names, config.data);
+    //     // const queries: any[] = [
+    //     //   pool
+    //     //     .request()
+    //     //     //.query(objectRead(this.options.type, this.options.objname)),
+    //     //   /*pool.request()*/.query(permissionsRead)
+    //     // ];
+    //     /*return Promise.all<sql.IResult<any>>(queries)
+    //       .then((results) => {
+    //         const tables: sql.IRecordSet<SqlTable> = results[1].recordset;
+    //         const names = tables.map((item) => `${item.schema}.${item.name}`);
 
-            if (!matched.length) {
-              return results;
-            }
-          })
-          .then((results) => {
-            pool.close();
-            return results;
-          });
-      })
-      .then((results) => this.writeFiles(config, results, this.options))
-      .catch((error) => {
-        console.error(error);
-        this.spinner.fail(error);
-      });
+    //         const matched = multimatch(names, config.data);
+
+    //         if (!matched.length) {
+    //           return results;
+    //         }
+    //       })
+    //       .then((results) => {
+    //         pool.close();
+    //         return results;
+    //       });*/
+    //   })
+    //   .then((results) => /*this.writeFiles(config, results, this.options)*/results)
+    //   .catch((error) => {
+    //     console.error(error);
+    //     this.spinner.fail(error);
+    //   });
   }
 
   /**
