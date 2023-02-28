@@ -1,7 +1,7 @@
 import * as inquirer from 'inquirer';
 
 import Config from '../common/config';
-import Connection from '../common/connection';
+//import Connection from '../common/connection';
 import { IConnection } from '../common/interfaces';
 import { PathChoices } from './eums';
 import { InitOptions } from './interfaces';
@@ -13,7 +13,7 @@ export default class Init {
    * Invoke action.
    */
   invoke() {
-    const webConfigConns = Config.getConnectionsFromWebConfig(
+    /*const webConfigConns = Config.getConnectionsFromWebConfig(
       this.options.webconfig
     );
     const conn = new Connection();
@@ -35,7 +35,8 @@ export default class Init {
     }
     const prompt = inquirer.createPromptModule();
     return prompt(this.getQuestions(conn, !!webConfigConns))
-      .then((answers) => this.writeFiles(answers));
+      .then((answers) => this.writeFiles(answers));*/
+    return console.error('Code needs to be amended!');
   }
 
   /**
@@ -43,7 +44,7 @@ export default class Init {
    *
    * @param conn Connection object to use for default values.
    */
-  private getQuestions(conn: Connection, showWebConfig: boolean) {
+  /*private getQuestions(conn: Connection, showWebConfig: boolean) {
     const questions: inquirer.QuestionCollection = [
       {
         choices: () => this.getPathChoices(showWebConfig),
@@ -92,7 +93,7 @@ export default class Init {
     ];
 
     return questions;
-  }
+  }*/
 
   /**
    * Get all available configuration file path choices.
@@ -132,7 +133,7 @@ export default class Init {
       password: answers.password,
       port: answers.port,
       server: answers.server,
-      user: answers.user,
+      user: answers.user
     };
 
     if (answers.path === PathChoices.WebConfig) {

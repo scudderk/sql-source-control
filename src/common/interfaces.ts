@@ -37,6 +37,7 @@ export interface IConnection {
   port?: number;
   user: string;
   password: string;
+  //options?: string | IOption[];
 }
 
 /**
@@ -49,6 +50,22 @@ export interface ISetting {
   idempotency: IdempotencyConfig;
   includeConstraintName: boolean;
   currentVersion: string;
+}
+
+/**
+ * option object properties.
+ */
+export interface IOption {
+  enableArithAbort: boolean;
+  cryptoCredentialsDetails: ICryptoCredentialsDetails;
+  encrypt: boolean;
+}
+
+/**
+ * CryptoCredentialsDetails object properties.
+ */
+export interface ICryptoCredentialsDetails {
+  minVersion: string;
 }
 
 /**

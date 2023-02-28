@@ -7,7 +7,8 @@ import ora from 'ora';
 import { EOL } from 'os';
 
 import Config from '../common/config';
-import Connection from '../common/connection';
+import Setting from '../common/setting';
+//import Connection from '../common/connection';
 import { PushOptions } from './interfaces';
 
 export default class Push {
@@ -23,7 +24,7 @@ export default class Push {
    */
   invoke() {
     const config = new Config(this.options.config);
-    const conn = config.getConnection(this.name);
+    //const conn = config.getConnection(this.name);
     const prompt = inquirer.createPromptModule();
     return prompt<inquirer.Answers>([
       {
@@ -46,7 +47,7 @@ export default class Push {
           throw new Error('Command aborted!');
         }
       })
-      .then(() => this.batch(config, conn))
+      //.then(() => this.batch(config, conn))
       .then(() => {
         this.spinner.succeed('Successfully pushed!');
       })
@@ -61,11 +62,11 @@ export default class Push {
    * @param config Configuration used to execute commands.
    * @param conn Connection used to execute commands.
    */
-  private batch(config: Config, conn: Connection) {
+  private batch(config: Config, sett: Setting) {
     const files = this.getFilesOrdered(config);
-    let promise = new sql.ConnectionPool(conn).connect();
+    let promise = new sql.ConnectionPool(sett.connection).connect();
 
-    this.spinner.start(`Pushing to ${chalk.blue(conn.server)} ...`);
+    this.spinner.start(`Pushing to ${chalk.blue(sett.connection.server)} ...`);
 
     files.forEach((file) => {
       const content = fs.readFileSync(file, 'utf8');

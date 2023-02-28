@@ -52,6 +52,7 @@ export default class Pull {
 
     this.spinner.start(`Pulling from ${chalk.blue(sett.connection.server)} ...`);
 
+    //console.log(sett);
     // connect to db
     return new sql.ConnectionPool(sett.connection)
       .connect()
