@@ -63,7 +63,7 @@ export default class PullSingle {
     );
 
     //async () => {
-      console.dir('szajt')
+      console.dir('test')
       try {
         // make sure that any items are correctly URL encoded in the connection string
         let pool = await sql.connect(sett.connection);
@@ -71,11 +71,11 @@ export default class PullSingle {
           .query(`select * from Colease`)
         console.dir(result)
       } catch (err) {
-        console.error('szajt')
+        console.error('test')
       }
     //}
     sql1.on('error', err => {
-      console.error('szajt')
+      console.error('test')
       console.error(err);
     })
 
