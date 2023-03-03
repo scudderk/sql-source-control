@@ -1,6 +1,5 @@
-[![NPM Version](https://badge.fury.io/js/sql-source-control.svg)](https://badge.fury.io/js/sql-source-control)
-[![CI](https://github.com/justinlettau/sql-source-control/workflows/CI/badge.svg)](https://github.com/justinlettau/sql-source-control/actions)
-[![Build status](https://ci.appveyor.com/api/projects/status/a92idr95kkly8lgt/branch/master?svg=true)](https://ci.appveyor.com/project/justinlettau/sql-source-control/branch/master)
+[![NPM Version](https://badge.fury.io/js/sql-source-control-psl.svg)](https://badge.fury.io/js/sql-source-control-psl)
+[![CI](https://github.com/scudderk/sql-source-control-psl/workflows/CI/badge.svg)](https://github.com/scudderk/sql-source-control-psl/actions)
 
 # SQL Source Control
 
@@ -30,7 +29,45 @@ CLI for scripting SQL objects into a flat file structure for use with source con
 # Installation
 
 ```bash
-npm install -g sql-source-control
+npm install -g sql-source-control-psl
+```
+
+You must then execute the following trigger on any database you wish to use it with:
+
+```sql
+IF EXISTS (
+  SELECT *
+  FROM sys.triggers
+  WHERE parent_class_desc = 'DATABASE'
+    AND name = N'log'
+)
+
+DROP TRIGGER [log]
+	ON DATABASE 
+GO
+	
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON 
+GO
+
+CREATE TRIGGER [log] ON 
+DATABASE AFTER CREATE_PROCEDURE AS
+
+DECLARE @data XML
+DECLARE @SQL VARCHAR(1000)
+
+SET @data = EVENTDATA()
+SET @SQL = 'bcp "SELECT ''' + @data.value('(/EVENT_INSTANCE/ObjectName)[1]', 'VARCHAR(100)') + ''' FOR XML PATH('''')" queryout "<DIRECTORY_MATCHES_SSC.JSON_ROOT_DIR>\temp_files\' + @data.value('(/EVENT_INSTANCE/ObjectName)[1]', 'VARCHAR(100)') + '.P" -T -c -t, -S <DATABASE_NAME>'
+
+EXEC xp_cmdshell @SQL
+
+GO 
+
+ENABLE TRIGGER [log]
+	ON DATABASE
+GO
 ```
 
 # Usage
@@ -43,6 +80,12 @@ ssc --help
 
 **Note**: Make sure to enable TCP/IP in "SQL Server Network Configuration" settings ([instructions](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/enable-or-disable-a-server-network-protocol?view=sql-server-2017#to-enable-a-server-network-protocol)).
 If TCP/IP is not enabled, you may receive a "failed to connect" error on commands.
+
+Start the day by running, this will start the watch over all your source controlled database folders.
+
+```bash
+ssc start
+```
 
 ### `ssc init`
 
