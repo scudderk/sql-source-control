@@ -80,7 +80,7 @@ export default class FileUtility {
       return;
     }
 
-    file = path.join(/*this.config.getRoot()*/this.sett.root, dir, file);
+    file = path.join(/*this.config.getRoot()*/this.sett.output.root, dir, file);
 
     switch (this.config.eol) {
       case 'crlf':
@@ -206,9 +206,9 @@ export default class FileUtility {
   *
   */
   writeUpdate (generator: MSSQLGenerator, file: FileUtility) {
-    let storedProcedureDirectory = path.join(this.sett.root, this.sett.currentVersion, 'stored-procedures')
-    let functionDirectory = path.join(this.sett.root, this.sett.currentVersion, 'function')
-    let filesDestinationDirectory = path.join(this.sett.root, this.sett.currentVersion, 'Upgrade ' + this.sett.currentVersion + ' - 3 Objects.sql');
+    let storedProcedureDirectory = path.join(this.sett.output.root, this.sett.currentVersion, 'stored-procedures')
+    let functionDirectory = path.join(this.sett.output.root, this.sett.currentVersion, 'function')
+    let filesDestinationDirectory = path.join(this.sett.output.root, this.sett.currentVersion, 'Upgrade ' + this.sett.currentVersion + ' - 3 Objects.sql');
     let files = [];
   
     const myPromise = new Promise((resolve, reject) => {

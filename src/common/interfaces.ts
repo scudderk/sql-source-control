@@ -49,7 +49,6 @@ export interface ISetting {
   output: OutputConfig;
   idempotency: IdempotencyConfig;
   includeConstraintName: boolean;
-  root: string;
   currentVersion: string;
 }
 
