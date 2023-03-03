@@ -1,4 +1,9 @@
-import { IConnection, IdempotencyConfig, ISetting, OutputConfig } from "./interfaces";
+import {
+  IConnection,
+  IdempotencyConfig,
+  ISetting,
+  OutputConfig,
+} from './interfaces';
 
 /**
  * Setting configuration.
@@ -69,6 +74,7 @@ export default class Setting implements ISetting {
     let triggers = parts.find((x) => /^(triggers)/gi.test(x));
     let types = parts.find((x) => /^(types)/gi.test(x));
     let views = parts.find((x) => /^(views)/gi.test(x));
+    let temps = parts.find((x) => /^(temps)/gi.test(x));
 
     // get values
     server = server && server.split('=')[1];
@@ -85,6 +91,7 @@ export default class Setting implements ISetting {
     triggers = triggers && triggers.split('=')[1];
     types = types && types.split('=')[1];
     views = views && views.split('=')[1];
+    temps = temps && temps.split('=')[1];
 
     // separate server and port
     if (server) {
@@ -115,6 +122,7 @@ export default class Setting implements ISetting {
       triggers,
       types,
       views,
+      temps,
     });
   }
 

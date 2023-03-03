@@ -101,7 +101,7 @@ export default class Push {
       config.output.procs,
       config.output.triggers,
       config.output.data,
-      config.output.jobs,
+      config.output.jobs
     ];
 
     directories.forEach((dir) => {

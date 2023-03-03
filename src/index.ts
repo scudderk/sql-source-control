@@ -3,7 +3,13 @@ import updateNotifier from 'update-notifier';
 
 import pkg = require('../package.json');
 import Init from './commands/init';
-import { InitOptions, ListOptions, PullOptions, PullSingleOptions, PushOptions } from './commands/interfaces';
+import {
+  InitOptions,
+  ListOptions,
+  PullOptions,
+  PullSingleOptions,
+  PushOptions,
+} from './commands/interfaces';
 import List from './commands/list';
 import Pull from './commands/pull';
 import PullSingle from './commands/pull-single';

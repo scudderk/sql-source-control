@@ -61,48 +61,48 @@ export default class Config implements IConfig {
    * @param file Relative path to Web.config file.
    */
   static getConnectionsFromWebConfig(file?: string) {
-  //   const configFile = path.join(
-  //     process.cwd(),
-  //     file || Config.defaultWebConfigFile
-  //   );
-  //   const parser = new xml2js.Parser();
-  //   const conns: Connection[] = [];
+    //   const configFile = path.join(
+    //     process.cwd(),
+    //     file || Config.defaultWebConfigFile
+    //   );
+    //   const parser = new xml2js.Parser();
+    //   const conns: Connection[] = [];
     const conns: string = '';
-  //   const setts: Setting[] = [];
+    //   const setts: Setting[] = [];
 
-  //   if (!fs.existsSync(configFile)) {
-  //     // not found, use defaults
-  //     return;
-  //   }
+    //   if (!fs.existsSync(configFile)) {
+    //     // not found, use defaults
+    //     return;
+    //   }
 
-  //   const content = fs.readFileSync(configFile, 'utf-8');
+    //   const content = fs.readFileSync(configFile, 'utf-8');
 
-  //   parser.parseString(content, (err: Error, result: any): void => {
-  //     if (err) {
-  //       console.error(err);
-  //       process.exit();
-  //     }
+    //   parser.parseString(content, (err: Error, result: any): void => {
+    //     if (err) {
+    //       console.error(err);
+    //       process.exit();
+    //     }
 
-  //     try {
-  //       const connectionStrings: any[] =
-  //         result.configuration.connectionStrings[0].add;
+    //     try {
+    //       const connectionStrings: any[] =
+    //         result.configuration.connectionStrings[0].add;
 
-  //       connectionStrings.forEach((item) => {
-  //         const conn = new Connection();
-  //         const sett = new Setting();
-  //         sett.loadFromString(item.$.name, item.$.connectionString);
-  //         conn.loadFromString(item.$.name, item.$.connectionString);
-  //         conns.push(conn);
-  //       });
-  //     } catch (err) {
-  //       console.error(
-  //         'Could not parse connection strings from Web.config file!'
-  //       );
-  //       process.exit();
-  //     }
-  //   });
+    //       connectionStrings.forEach((item) => {
+    //         const conn = new Connection();
+    //         const sett = new Setting();
+    //         sett.loadFromString(item.$.name, item.$.connectionString);
+    //         conn.loadFromString(item.$.name, item.$.connectionString);
+    //         conns.push(conn);
+    //       });
+    //     } catch (err) {
+    //       console.error(
+    //         'Could not parse connection strings from Web.config file!'
+    //       );
+    //       process.exit();
+    //     }
+    //   });
 
-  //   return conns.length ? conns : undefined;
+    //   return conns.length ? conns : undefined;
     return conns;
   }
 
@@ -115,7 +115,7 @@ export default class Config implements IConfig {
   //  */
   // connections: string | Connection[] = [];
 
-  settings: string | Setting[] = [];
+   settings: string | Setting[] = [];
 
   /**
    * Glob of files to include/exclude during the `pull` command.
@@ -141,7 +141,7 @@ export default class Config implements IConfig {
     triggers: './triggers',
     types: './types',
     views: './views',
-    temps: '.temp_files'
+    temps: './temp_files',
   };
 
   /**
@@ -156,7 +156,7 @@ export default class Config implements IConfig {
     triggers: 'if-exists-drop',
     types: 'if-not-exists',
     views: 'if-exists-drop',
-    temps: 'if-exists-drop'
+    temps: 'if-exists-drop',
   };
 
   /**
@@ -252,31 +252,32 @@ export default class Config implements IConfig {
 
     let sett: Setting;
     let error: string;
+
     if (name) {
       sett = setts.find(
         (item) => item.name.toLocaleLowerCase() === name.toLowerCase()
-      );
-      error = `Could not find settings by name '${name}'!`;
-    } else {
-      sett = setts[0];
-      error = 'Could not find default setting!';
-    }
-
+        );
+        error = `Could not find settings by name '${name}'!`;
+      } else {
+        sett = setts[0];
+        error = 'Could not find default setting!';
+      }
+      
     if (!sett) {
       console.error(error);
       process.exit();
     }
 
-    sett.connection =  Object.assign(sett.connection, {
+    sett.connection = Object.assign(sett.connection, {
       options: {
-          // https://github.com/tediousjs/tedious/releases/tag/v7.0.0
-          enableArithAbort: true,
-          cryptoCredentialsDetails: {
-            minVersion: 'TLSv1'
-          },
-          encrypt: false
+        // https://github.com/tediousjs/tedious/releases/tag/v7.0.0
+        enableArithAbort: true,
+        cryptoCredentialsDetails: {
+          minVersion: 'TLSv1',
+        },
+        encrypt: false,
       },
-      requestTimeout: 5000
+      requestTimeout: 5000,
     });
 
     return sett;
@@ -312,7 +313,7 @@ export default class Config implements IConfig {
     //if (configFile.test(this.settings)) {
     //  return Config.getSettingsFromWebConfig(this.settings);
     //} else {
-      return this.getSettingsFromJson(this.settings);
+    return this.getSettingsFromJson(this.settings);
     //}
   }
 
@@ -322,7 +323,10 @@ export default class Config implements IConfig {
    * @param file Configuration file to load.
    */
   private load(file?: string) {
-    const configFile = path.join(process.cwd(), file || Config.defaultConfigFile);
+    const configFile = path.join(
+      process.cwd(),
+      file || Config.defaultConfigFile
+    );
     //console.log(file)
 
     try {
