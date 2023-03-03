@@ -32,8 +32,15 @@ export default class PullSingle {
   invoke() {
     const config = new Config(this.options.config);
     const sett = config.getSetting(this.name);
+
     let temps = '';
-    if (sett.output.temps != false) {temps = path.join(sett.output.root, sett.output.temps)}
+    if (sett.output.temps != false) {
+      const dir = path.join(sett.output.root, sett.output.temps);
+      if (!fs.existsSync(dir) && sett.output.temps !== '') {
+        fs.mkdirSync(dir);
+      }
+      temps = path.join(dir);
+    }
 
     /*this.spinner.start(
       // `Pulling ${this.options.objname} from ${chalk.blue(sett.connection.server)} ...`
