@@ -14,6 +14,7 @@ import List from './commands/list';
 import Pull from './commands/pull';
 import PullSingle from './commands/pull-single';
 import Push from './commands/push';
+import Start from './commands/start';
 
 async function main() {
   program
@@ -37,6 +38,16 @@ async function main() {
       return action.invoke();
     });
 
+  program
+    .command('start')
+    .description(
+      'Starts the service that tracks changes in folders used by ssc.'
+    )
+    .action(() => {
+      const action = new Start();
+      return action.invoke();
+    });
+  
   program
     .command('pull [name]')
     .description(
