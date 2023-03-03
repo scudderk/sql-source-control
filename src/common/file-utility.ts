@@ -10,15 +10,19 @@ import * as path from 'path';
 import Cache from './cache';
 import Config from './config';
 import { OperationCounts } from './interfaces';
+import Setting from './setting';
+var async = require('async');
+import MSSQLGenerator from '../generators/mssql';
 
 /**
  * File system interaction and tracking.
  */
 export default class FileUtility {
-  constructor(config: Config) {
+  constructor(config: Config, sett: Setting) {
     this.config = config;
-    this.existingCache = new Cache(config);
-    this.newCache = new Cache(config);
+    this.sett = sett;
+    this.existingCache = new Cache(config, sett);
+    this.newCache = new Cache(config, sett);
 
     this.load();
   }
@@ -27,6 +31,11 @@ export default class FileUtility {
    * Current configuration.
    */
   private config: Config;
+
+  /**
+   * Current settings.
+   */
+  private sett: Setting;
 
   /**
    * Existing files.
@@ -71,7 +80,7 @@ export default class FileUtility {
       return;
     }
 
-    file = path.join(this.config.getRoot(), dir, file);
+    file = path.join(/*this.config.getRoot()*/this.sett.root, dir, file);
 
     switch (this.config.eol) {
       case 'crlf':
@@ -190,5 +199,134 @@ export default class FileUtility {
   private load() {
     this.existingFiles = glob.sync(`${this.config.getRoot()}/**/*.sql`);
     this.existingCache.load();
+  }
+
+  /**
+   * Write update file to the file system.
+  *
+  */
+  writeUpdate (generator: MSSQLGenerator, file: FileUtility) {
+    let storedProcedureDirectory = path.join(this.sett.root, this.sett.currentVersion, 'stored-procedures')
+    let functionDirectory = path.join(this.sett.root, this.sett.currentVersion, 'function')
+    let filesDestinationDirectory = path.join(this.sett.root, this.sett.currentVersion, 'Upgrade ' + this.sett.currentVersion + ' - 3 Objects.sql');
+    let files = [];
+  
+    const myPromise = new Promise((resolve, reject) => {
+        if (this.sett.output.procs != false) {
+          fs.readdir(storedProcedureDirectory, (err, filenames) => {
+            if (err) {
+                console.log(err);
+                return reject(err);
+            }
+            if (!filenames.includes(`UpgradeAudit_${this.sett.currentVersion}_Object.sql`)) {
+              let upgradeAuditName = `UpgradeAudit.sql`;
+              let content = generator.upgradeAudit(this.sett.currentVersion, 'Object');
+              file.write(`${this.sett.currentVersion}/${this.sett.output.procs}`, upgradeAuditName, content);
+            }
+          })
+          fs.readdir(storedProcedureDirectory, (err, filenames) => {
+              files = this.mergeArrays(files, filenames.map(file => path.join(storedProcedureDirectory, file)));
+              resolve(files);
+          });
+        }
+    })
+    .then(() => {
+        if (this.sett.output.functions != false) {
+            fs.readdir(functionDirectory, (err, filenames) => {
+                if (err) {
+                    console.error(err);
+                }
+                files = this.mergeArrays(files, filenames.map(file => path.join(functionDirectory, file)));
+                return files;
+            });
+        }
+    })
+    //.then(handleFulfilledB)
+    //.then(handleFulfilledC)
+    .catch((err) => { console.error(err); })
+    .finally(() => {
+        async.map(files, fs.readFile, (err, results) => {
+            if (err) {
+                console.error(err);
+                return err;
+            }
+            //Write the joined results to destination
+            fs.writeFile(filesDestinationDirectory, results.join("\n\n\n\n"), (err) => {
+                if (err) {
+                    console.error(err);
+                    return err;
+                }
+                console.log(chalk.bgMagenta.black.bold('\nUpdate file has been generated.'));
+                // resolve();
+            });
+        });
+    });
+  
+  
+  
+  
+    //return new Promise((resolve, reject) => {
+        if (this.sett.output.procs != false) {
+            /*fs.readdir(spDirectory, (err, spFiles) => {
+                if (err) {
+                    console.log(err);
+                    return reject(err);
+                }
+                const tempFiles = spFiles.map(file => path.join(spDirectory, file));
+                files.push(tempFiles[0]);
+            });*/
+  
+            /*files.push(this.readDirectory(storedProcedureDirectory).then(filenames => {
+                return filenames;
+            }));*/
+            //files.push(this.readDirectory(storedProcedureDirectory));
+            /*var test = this.readDirectory(storedProcedureDirectory).then((filenames) => {
+                return filenames;
+            });*/
+            //console.log(test.resolve)
+            // setTimeout(function() {console.log(test)}, 2000);
+            //console.log(files);
+        }
+        if (this.sett.output.functions != false) {
+            //files.concat(this.readDirectory(functionDirectory));
+            /*fs.readdir(spDirectoryFunction, (err, funcFiles) => {
+                if (err) {
+                    console.log(err);
+                    return reject(err);
+                }
+                const tempFiles = funcFiles.map(file => path.join(spDirectoryFunction, file));
+                files.push(tempFiles[0]);
+            })*/
+        }
+        //Read all files in parallel
+        /*async.map(files, fs.readFile, (err, results) => {
+            //console.log(results);
+        });*/
+        /*async.map(files, fs.readFile, (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            //Write the joined results to destination
+            fs.writeFile(filesDestinationDirectory, results.join("\n\n\n\n"), (err) => {
+                if (err) {
+                    return reject(err);
+                }
+                console.log(chalk.bgMagenta.black.bold('\nUpdate file has been generated.'));
+                // resolve();
+            });
+        });*/
+        //resolve();
+    //});
+  };
+  private mergeArrays = function (arr1, arr2) {
+    if (arr2.length == 1) {
+      arr1.push(arr2[0]);
+    }
+    else if (arr2.length > 1) {
+      arr2.forEach(function (item) {
+        arr1.push(item);
+      });
+    }
+    return arr1;
   }
 }

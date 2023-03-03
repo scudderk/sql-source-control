@@ -34,6 +34,11 @@ export default class Setting implements ISetting {
   includeConstraintName: boolean;
 
   /**
+   * root value.
+   */
+  root: string;
+
+  /**
    * current version value.
    */
   currentVersion: string;

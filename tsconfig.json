@@ -4,8 +4,8 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "noImplicitAny": true,
     "outDir": "dist",
+    "noImplicitAny": false,
     "sourceMap": true,
     "target": "es5"
   },

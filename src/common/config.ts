@@ -141,6 +141,7 @@ export default class Config implements IConfig {
     triggers: './triggers',
     types: './types',
     views: './views',
+    temps: '.temp_files'
   };
 
   /**
@@ -155,6 +156,7 @@ export default class Config implements IConfig {
     triggers: 'if-exists-drop',
     types: 'if-not-exists',
     views: 'if-exists-drop',
+    temps: 'if-exists-drop'
   };
 
   /**
@@ -188,6 +190,7 @@ export default class Config implements IConfig {
     triggers: 'triggers';
     types: 'types';
     views: 'views';
+    temps: 'temps';
   };
   /**
    * Get root output directory.
@@ -273,6 +276,7 @@ export default class Config implements IConfig {
           },
           encrypt: false
       },
+      requestTimeout: 5000
     });
 
     return sett;
@@ -318,14 +322,11 @@ export default class Config implements IConfig {
    * @param file Configuration file to load.
    */
   private load(file?: string) {
-    const configFile = path.join(
-      process.cwd(),
-      file || Config.defaultConfigFile
-    );
+    const configFile = path.join(process.cwd(), file || Config.defaultConfigFile);
+    //console.log(file)
 
     try {
       const config: Config = fs.readJsonSync(configFile);
-      //console.group(config)
       //this.connections = config.connections || this.connections;
       this.settings = config.settings || this.settings;
       this.data = config.data || this.data;

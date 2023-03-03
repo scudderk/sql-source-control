@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 import sql from 'mssql';
-const sql1 =  require('mssql');
 import multimatch from 'multimatch';
 import ora from 'ora';
 
@@ -35,6 +34,10 @@ import {
   typesRead,
 } from '../queries/mssql';
 import { PullSingleOptions } from './interfaces';
+import chokidar from 'chokidar';
+import fs from 'fs';
+import Setting from '../common/setting';
+import * as path from 'path';
 
 export default class PullSingle {
   constructor(private name: string, private options: PullSingleOptions) {}
@@ -43,8 +46,6 @@ export default class PullSingle {
    * Spinner instance.
    */
   private spinner = ora();
-
-
 
   invoke_test() {
     const config = new Config(this.options.config);
@@ -57,28 +58,71 @@ export default class PullSingle {
   invoke() {
     const config = new Config(this.options.config);
     const sett = config.getSetting(this.name);
+    let temps = '';
+    if (sett.output.temps != false) {temps = path.join(sett.output.root, sett.output.temps)}
 
-    this.spinner.start(
-      `Pulling ${this.options.objname} from ${chalk.blue(sett.connection.server)} ...`
-    );
+    /*this.spinner.start(
+      // `Pulling ${this.options.objname} from ${chalk.blue(sett.connection.server)} ...`
+      `Listening to directory ${chalk.blue(temps)} ...`
+    );*/
+    console.log('Listening to directory ' + temps);
 
-    //async () => {
-      console.dir('test')
-      try {
-        // make sure that any items are correctly URL encoded in the connection string
-        let pool = await sql.connect(sett.connection);
-        let result = await pool.request()
-          .query(`select * from Colease`)
-        console.dir(result)
-      } catch (err) {
-        console.error('test')
-      }
-    //}
-    sql1.on('error', err => {
-      console.error('test')
-      console.error(err);
+    chokidar.watch(temps, {ignored: /^\./, persistent: true})
+    .on('add', function(path) {
+      let pathArray = path.split('\\');
+      let fileArray = pathArray[pathArray.length - 1].split('.');
+      let storedProcedureName = fileArray[0];
+      let type = fileArray[1];
+      console.log('Stored Procedure', storedProcedureName, 'has been triggered');
+
+      // connect to db
+      return new sql.ConnectionPool(sett.connection)
+        .connect()
+        .then((pool) => {
+          const queries: any[] = [
+            pool
+              .request()
+              .query(objectRead(type, storedProcedureName)),
+            pool.request().query(permissionsRead)
+          ];
+          return Promise.all<sql.IResult<any>>(queries)
+            .then((results) => {
+              const tables: sql.IRecordSet<SqlTable> = results[1].recordset;
+              const names = tables.map((item) => `${item.schema}.${item.name}`);
+
+              const matched = multimatch(names, config.data);
+
+              if (!matched.length) {
+                return results;
+              }
+            })
+            .then((results) => {
+              pool.close();
+              fs.unlink(path, (err) => {
+                if (err) {
+                    console.error(err);
+                }
+              });
+              return results;
+            });
+        })
+        .then((results) => writeFiles(config, sett, results, storedProcedureName, type))
+        .catch((error) => {
+          console.error(error);
+          // this.spinner.fail(error);
+        });
+        // this.writeFiles(config, test, this.options)
     })
-
+    .on('change', function(path) {
+      console.log('File', path, 'has been changed');
+    })
+    .on('unlink', function(path) {
+      console.log('File', path, 'has been removed');
+    })
+    .on('error', function(error) {
+      console.error('Error happened', error);
+    });
+    
 
 
 
@@ -125,45 +169,85 @@ export default class PullSingle {
    * @param config Current configuration to use.
    * @param results Array of data sets from SQL queries.
    */
-  private writeFiles(config: Config, results: any[], options: PullSingleOptions) {
+  // writeFiles(config: Config, results: any[], options: PullSingleOptions) {
+  //   // note: array order MUST match query promise array
+  //   const objects: SqlObject[] = results[0].recordset;
+  //   const permissions: SqlPermissions[] = results[1].recordset ? results[1].recordset : [];
+    
+  //   const generator = new MSSQLGenerator(config);
+  //   const file = new FileUtility(config);
+  //   let name: string
+  //   let content: string 
+  //   switch (options.type) {
+  //     // stored procedures
+  //     case 'P':
+  //       name = `${options.objname}.sql`;
+  //       content = generator.storedProcedure(objects[0]);
+  //       content += generator.permissions(permissions, name);
+  //       file.write(config.output.procs, name, content);
+  //       file.write(`${config.currentVersion}/${config.output.procs}`, name, content);
+  //       break;
+  //     // views
+  //     case 'V':
+  //       name = `${options.objname}.sql`;
+  //       content = generator.view(objects[0]);
+  //       file.write(config.output.views, name, content);
+  //       break;
+  //     // functions
+  //     case 'TF':
+  //     case 'IF':
+  //     case 'FN':
+  //       name = `${options.objname}.sql`;
+  //       content = generator.function(objects[0]);
+    
+  //       file.write(config.output.functions, name, content);
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   //file.writeUpdate();
+  //   const msg = file.finalize();
+  //   // this.spinner.succeed(msg);
+  //   console.log(msg);
+  // }
+}
+function writeFiles (config: Config, sett: Setting, results: any[], name: string, type: string) {
     // note: array order MUST match query promise array
     const objects: SqlObject[] = results[0].recordset;
     const permissions: SqlPermissions[] = results[1].recordset ? results[1].recordset : [];
     
     const generator = new MSSQLGenerator(config);
-    const file = new FileUtility(config);
-    let name: string
+    const file = new FileUtility(config, sett);
     let content: string 
-    switch (options.type) {
+    switch (type) {
       // stored procedures
       case 'P':
-        name = `${options.objname}.sql`;
+        name = `${name}.sql`;
         content = generator.storedProcedure(objects[0]);
-        content += generator.permissions(permissions, name);
-        file.write(config.output.procs, name, content);
-        file.write(`${config.currentVersion}/${config.output.procs}`, name, content);
+        content += generator.permissions(permissions, name.split('.')[0]);
+        file.write(`${sett.currentVersion}/${sett.output.procs}`, name, content);
         break;
       // views
       case 'V':
-        name = `${options.objname}.sql`;
+        name = `${name}.sql`;
         content = generator.view(objects[0]);
-        file.write(config.output.views, name, content);
+        file.write(sett.output.views, name, content);
         break;
       // functions
       case 'TF':
       case 'IF':
       case 'FN':
-        name = `${options.objname}.sql`;
+        name = `${name}.sql`;
         content = generator.function(objects[0]);
-    
-        file.write(config.output.functions, name, content);
+        file.write(sett.output.functions, name, content);
         break;
       default:
         break;
     }
 
-    //file.writeUpdate();
+    file.writeUpdate(generator, file);
     const msg = file.finalize();
-    this.spinner.succeed(msg);
-  }
+    // this.spinner.succeed(msg);
+    console.log(msg);
 }

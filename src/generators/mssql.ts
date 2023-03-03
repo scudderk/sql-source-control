@@ -85,6 +85,27 @@ export default class MSSQLGenerator {
   }
 
   /**
+   * Get Upgrade Audit header.
+   *
+   * @param version current software version.
+   * @param type script types.
+   */
+  upgradeAudit(version: string, type: string) {
+    let output = '';
+
+    output += `-- ************************** UPGRADE AUDIT ********************************`;
+    output += EOL;
+    output += `INSERT INTO UpgradeAudit (ScriptName) VALUES ('Harmonia Upgrade ${version} - 3 ${type}.sql')`;
+    output += EOL;
+    output += `GO`;
+    output += EOL;
+    output += `-- *************************************************************************`;
+
+    return output;
+  }
+
+
+  /**
    * Get function file content.
    *
    * @param item Row from query.

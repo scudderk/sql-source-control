@@ -49,6 +49,7 @@ export interface ISetting {
   output: OutputConfig;
   idempotency: IdempotencyConfig;
   includeConstraintName: boolean;
+  root: string;
   currentVersion: string;
 }
 
@@ -80,6 +81,7 @@ export interface IdempotencyConfig {
   triggers?: IdempotencyObject;
   types?: IdempotencyObject;
   views?: IdempotencyObject;
+  temps?: IdempotencyObject;
 }
 
 /**
@@ -96,4 +98,5 @@ export interface OutputConfig {
   triggers?: string | false;
   types?: string | false;
   views?: string | false;
+  temps?: string | false;
 }
