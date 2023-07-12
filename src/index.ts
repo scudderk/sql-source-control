@@ -10,6 +10,7 @@ import {
   PullOptions,
   PullSingleOptions,
   PushOptions,
+  StartOptions,
 } from './commands/interfaces';
 import List from './commands/list';
 import Pull from './commands/pull';
@@ -42,11 +43,13 @@ async function main() {
 
   program
     .command('start')
-    .description(
-      'Starts the service that tracks changes in folders used by ssc.'
-    )
-    .action(() => {
-      const action = new Start();
+    .description('Starts the service that tracks changes in folders used by ssc.')
+      .option('-c, --config [value]', 'Relative path to config file.')
+    .action((options: StartOptions) => {
+      const action = new Start(options);
+      return action.invoke();
+    });
+  
   program
     .command('bump')
     .alias('b')
