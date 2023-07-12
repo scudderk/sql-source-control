@@ -33,7 +33,7 @@ export default class Init {
    *
    * @param conn Connection object to use for default values.
    */
-  private getQuestions(sett: Setting, showWebConfig: boolean) {
+  private getQuestions(showWebConfig: boolean) {
     const questions: inquirer.QuestionCollection = [
       {
         choices: () => this.getPathChoices(showWebConfig),
@@ -80,63 +80,69 @@ export default class Init {
         when: (answers) => answers.path !== PathChoices.WebConfig,
       },
       {
-        default: 'procs',
+        default: 'dev',
+        message: 'Connection name.',
+        name: 'name',
+        when: (answers) => answers.path !== PathChoices.WebConfig,
+      },
+      {
+        default: `${process.cwd()}`,
+        message: 'Root folder for project.',
+        name: 'root',
+        when: (answers) => answers.path !== PathChoices.WebConfig,
+      },
+      {
+        default: './procs',
         message: 'Procedure folder.',
         name: 'procs',
         when: (answers) => answers.path !== PathChoices.WebConfig,
       },
       {
-        default: 'data',
+        default: './data',
         message: 'Data folder.',
         name: 'data',
         when: (answers) => answers.path !== PathChoices.WebConfig,
       },
       {
-        default: 'functions',
+        default: './functions',
         message: 'Functions folder.',
         name: 'functions',
         when: (answers) => answers.path !== PathChoices.WebConfig,
       },
       {
-        default: 'jobs',
+        default: './jobs',
         message: 'Jobs folder.',
         name: 'jobs',
         when: (answers) => answers.path !== PathChoices.WebConfig,
       },
       {
-        default: 'schema',
+        default: './schema',
         message: 'schemas folder.',
         name: 'schemas',
         when: (answers) => answers.path !== PathChoices.WebConfig,
       },
       {
-        default: 'tables',
+        default: './tables',
         message: 'Tables folder.',
         name: 'tables',
         when: (answers) => answers.path !== PathChoices.WebConfig,
       },
       {
-        default: 'triggers',
+        default: './triggers',
         message: 'Trigger folder.',
         name: 'triggers',
         when: (answers) => answers.path !== PathChoices.WebConfig,
       },
       {
-        default: 'types',
+        default: './types',
         message: 'Types folder.',
         name: 'types',
         when: (answers) => answers.path !== PathChoices.WebConfig,
       },
       {
-        default: 'views',
+        default: './views',
         message: 'Views folder.',
         name: 'views',
-        when: (answers) => answers.path !== PathChoices.WebConfig,
-      },
-      {
-        default: 'dev',
-        message: 'Connection name.',
-        name: 'name',
         when: (answers) => answers.path !== PathChoices.WebConfig,
       },
     ];
