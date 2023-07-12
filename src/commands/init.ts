@@ -37,9 +37,9 @@ export default class Init {
         new sql.ConnectionPool(sett.connection)
           .connect()
           .then((pool) => {
-            pool.request().query(dropTriggerWrite).then(() => {
+            pool.request().query(dropTriggerWrite()).then(() => {
               pool.request().query(triggerWrite(answers.root, answers.server)).then(() => {
-                pool.request().query(enableTriggerWrite)
+                pool.request().query(enableTriggerWrite())
               }).then(() => {
                 sqlSpinner.stop();
               })
