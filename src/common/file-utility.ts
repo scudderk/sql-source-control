@@ -10,15 +10,19 @@ import * as path from 'path';
 import Cache from './cache';
 import Config from './config';
 import { OperationCounts } from './interfaces';
+import Setting from './setting';
+var async = require('async');
+import MSSQLGenerator from '../generators/mssql';
 
 /**
  * File system interaction and tracking.
  */
 export default class FileUtility {
-  constructor(config: Config) {
+  constructor(config: Config, sett: Setting) {
     this.config = config;
-    this.existingCache = new Cache(config);
-    this.newCache = new Cache(config);
+    this.sett = sett;
+    this.existingCache = new Cache(config, sett);
+    this.newCache = new Cache(config, sett);
 
     this.load();
   }
@@ -27,6 +31,11 @@ export default class FileUtility {
    * Current configuration.
    */
   private config: Config;
+
+  /**
+   * Current settings.
+   */
+  private sett: Setting;
 
   /**
    * Existing files.
@@ -67,25 +76,13 @@ export default class FileUtility {
     // remove unsafe characters
     file = filenamify(file);
 
-    if (!this.shouldWrite(file)) {
-      return;
-    }
+    file = path.join(
+      this.sett.output.root,
+      dir,
+      file
+    );
 
-    file = path.join(this.config.getRoot(), dir, file);
-
-    switch (this.config.eol) {
-      case 'crlf':
-        content = eol.crlf(content);
-        break;
-      case 'lf':
-        content = eol.lf(content);
-        break;
-      case 'auto':
-      default:
-        content = eol.auto(content);
-        break;
-    }
-
+    content = eol.auto(content);
     content = content.trim();
 
     const cacheKey = this.normalize(file);
@@ -118,20 +115,6 @@ export default class FileUtility {
     const removed = chalk.red(this.stats.removed.toString());
 
     return `Successfully added ${added}, updated ${updated}, and removed ${removed} files.`;
-  }
-
-  /**
-   * Check if a file passes the glob pattern.
-   *
-   * @param file File path to check.
-   */
-  private shouldWrite(file: string) {
-    if (!this.config.files || !this.config.files.length) {
-      return true;
-    }
-
-    const results = multimatch([file], this.config.files);
-    return !!results.length;
   }
 
   /**
@@ -175,7 +158,7 @@ export default class FileUtility {
    * @param file File path to normalize.
    */
   private normalize(file: string) {
-    const root = this.config.getRoot();
+    const root = this.sett.getRoot();
 
     if (root.startsWith('./') && !file.startsWith('./')) {
       file = `./${file}`;
@@ -188,7 +171,137 @@ export default class FileUtility {
    * Load existing files and cache for comparison.
    */
   private load() {
-    this.existingFiles = glob.sync(`${this.config.getRoot()}/**/*.sql`);
+    this.existingFiles = glob.sync(`${this.sett.getRoot()}/**/*.sql`);
     this.existingCache.load();
   }
+
+  /**
+   * Write update file to the file system.
+   *
+   */
+  writeUpdate(generator: MSSQLGenerator, file: FileUtility) {
+    let storedProcedureDirectory = path.join(
+      this.sett.output.root,
+      this.sett.currentVersion,
+      'stored-procedures'
+    );
+    let functionDirectory = path.join(
+      this.sett.output.root,
+      this.sett.currentVersion,
+      'functions'
+    );
+    let filesDestinationDirectory = path.join(
+      this.sett.output.root,
+      this.sett.currentVersion,
+      'Upgrade ' + this.sett.currentVersion + ' - 3 Objects.sql'
+    );
+    let files = [];
+    if (!fs.existsSync(storedProcedureDirectory)) {
+      fs.mkdirSync(storedProcedureDirectory);
+    }
+    if (!fs.existsSync(functionDirectory)) {
+      fs.mkdirSync(functionDirectory);
+    }
+    const myPromise = new Promise((resolve, reject) => {
+      if (this.sett.output.procs != false) {
+        const myPromise = new Promise((resolve, reject) => {
+          fs.readdir(storedProcedureDirectory, (err, filenames) => {
+            if (err) {
+              console.log(err);
+              return reject(err);
+            }
+            if (
+              !filenames.includes(
+                `UpgradeAudit_${this.sett.currentVersion}_Object.sql`
+              )
+            ) {
+              let upgradeAuditName = `UpgradeAudit.sql`;
+              let content = generator.upgradeAudit(
+                this.sett.name,
+                this.sett.currentVersion,
+                'Object'
+              );
+              file.write(
+                `${this.sett.currentVersion}/${this.sett.output.procs}`,
+                upgradeAuditName,
+                content
+              );
+            }
+            return(files);
+          });
+        }).then((files: []) => {
+          fs.readdir(storedProcedureDirectory, (err, filenames) => {
+            files = this.mergeArrays(
+              files,
+              filenames.map((file) => path.join(storedProcedureDirectory, file))
+            );
+            console.log('mergearrays resolve', files);
+            resolve(files);
+          });
+        });
+        console.log('resolve', files);
+        return files;
+      }
+    })
+      .then(() => {
+        if (this.sett.output.functions != false) {
+          console.log(files);
+          fs.readdir(functionDirectory, (err, filenames) => {
+            if (err) {
+              console.error(err);
+            }
+            files = this.mergeArrays(
+              files,
+              filenames.map((file) => path.join(functionDirectory, file))
+            );
+            console.log('in', files);
+            return files;
+          });
+          console.log('out', files);
+        }
+        console.log(files);
+      })
+      .finally(() => {
+        console.log('finally')
+        async.map(files, fs.readFile, (err, results) => {
+          console.table(files);
+          if (err) {
+            console.error(err);
+            return err;
+          }
+          //Write the joined results to destination
+          fs.writeFile(
+            filesDestinationDirectory,
+            results.join('\n\n\n\n'),
+            (err) => {
+              if (err) {
+                console.error(err);
+                return err;
+              }
+              console.log(
+                chalk.bgMagenta.black.bold('\nUpdate file has been generated.')
+              );
+            }
+          );
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+
+    if (this.sett.output.procs != false) {
+    }
+    if (this.sett.output.functions != false) {
+    }
+  }
+  private mergeArrays = function (arr1, arr2) {
+    if (arr2.length == 1) {
+      arr1.push(arr2[0]);
+    } else if (arr2.length > 1) {
+      arr2.forEach(function (item) {
+        arr1.push(item);
+      });
+    }
+    return arr1;
+  };
 }

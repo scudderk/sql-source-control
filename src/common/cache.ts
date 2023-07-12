@@ -3,6 +3,7 @@ import * as path from 'path';
 
 import Config from './config';
 import { ICache } from './interfaces';
+import Setting from './setting';
 
 /**
  * File checksum cache.
@@ -13,8 +14,9 @@ export default class Cache implements ICache {
    */
   static readonly defaultCacheFile = 'cache.json';
 
-  constructor(config: Config) {
+  constructor(config: Config, sett: Setting) {
     this.config = config;
+    this.sett = sett;
   }
 
   /**
@@ -26,6 +28,10 @@ export default class Cache implements ICache {
    * Current configuration.
    */
   private config: Config;
+  /**
+   * Current setting.
+   */
+  private sett: Setting;
 
   /**
    * Load configuration options from file.
@@ -36,7 +42,7 @@ export default class Cache implements ICache {
     }
 
     try {
-      const file = path.join(this.config.getRoot(), Cache.defaultCacheFile);
+      const file = path.join(/*this.config.getRoot()*/this.sett.output.root, Cache.defaultCacheFile);
       const cache: ICache = fs.readJsonSync(file);
 
       this.files = cache.files;
@@ -86,7 +92,7 @@ export default class Cache implements ICache {
    * Write a config file with provided configuration.
    */
   write() {
-    const file = path.join(this.config.getRoot(), Cache.defaultCacheFile);
+    const file = path.join(/*this.config.getRoot()*/this.sett.output.root, Cache.defaultCacheFile);
     const content: ICache = { files: this.files };
 
     fs.writeJson(file, content, { spaces: 2 });
@@ -96,7 +102,7 @@ export default class Cache implements ICache {
    * Check if default cache file exists.
    */
   private doesDefaultExist() {
-    const file = path.join(this.config.getRoot(), Cache.defaultCacheFile);
+    const file = path.join(/*this.config.getRoot()*/this.sett.output.root, Cache.defaultCacheFile);
 
     return fs.existsSync(file);
   }

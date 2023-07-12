@@ -18,6 +18,7 @@ import {
   SqlTable,
   SqlType,
 } from '../queries/interfaces';
+import Setting from '../common/setting';
 
 /**
  * MSSQL generator.
@@ -37,10 +38,10 @@ export default class MSSQLGenerator {
    *
    * @param item Row from query.
    */
-  data(item: SqlDataResult) {
+  data(item: SqlDataResult, sett: Setting) {
     let output = '';
 
-    switch (this.config.idempotency.data) {
+    switch (sett.idempotency.data) {
       case 'delete':
         output += `DELETE FROM [${item.schema}].[${item.name}]` + EOL;
         output += EOL;
@@ -85,16 +86,37 @@ export default class MSSQLGenerator {
   }
 
   /**
+   * Get Upgrade Audit header.
+   *
+   * @param version current software version.
+   * @param type script types.
+   */
+  upgradeAudit(name: string, version: string, type: string) {
+    let output = '';
+
+    output += `-- ************************** UPGRADE AUDIT ********************************`;
+    output += EOL;
+    output += `INSERT INTO UpgradeAudit (ScriptName) VALUES ('${name} Upgrade ${version} - 3 ${type}.sql')`;
+    output += EOL;
+    output += `GO`;
+    output += EOL;
+    output += `-- *************************************************************************`;
+
+    return output;
+  }
+
+
+  /**
    * Get function file content.
    *
    * @param item Row from query.
    */
-  function(item: SqlObject) {
+  function(item: SqlObject, sett: Setting) {
     const objectId = `[${item.schema}].[${item.name}]`;
     const type = item.type.trim();
     let output = '';
 
-    switch (this.config.idempotency.functions) {
+    switch (sett.idempotency.functions) {
       case 'if-exists-drop':
         output += `IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('${objectId}') AND type = '${type}')`;
         output += EOL;
@@ -119,12 +141,12 @@ export default class MSSQLGenerator {
    *
    * @param item Row from query.
    */
-  storedProcedure(item: SqlObject) {
+  storedProcedure(item: SqlObject, sett: Setting) {
     const objectId = `[${item.schema}].[${item.name}]`;
     const type = item.type.trim();
     let output = '';
 
-    switch (this.config.idempotency.procs) {
+    switch (sett.idempotency.procs) {
       case 'if-exists-drop':
         output += `IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('${objectId}') AND type = '${type}')`;
         output += EOL;
@@ -246,13 +268,14 @@ export default class MSSQLGenerator {
     columns: SqlColumn[],
     primaryKeys: SqlPrimaryKey[],
     foreignKeys: SqlForeignKey[],
-    indexes: SqlIndex[]
+    indexes: SqlIndex[],
+    sett: Setting
   ) {
     const objectId = `[${item.schema}].[${item.name}]`;
     const type = item.type.trim();
     let output = '';
 
-    switch (this.config.idempotency.tables) {
+    switch (sett.idempotency.tables) {
       case 'if-exists-drop':
         output += `IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('${objectId}') AND type = '${type}')`;
         output += EOL;
@@ -275,7 +298,7 @@ export default class MSSQLGenerator {
     columns
       .filter((x) => x.object_id === item.object_id)
       .forEach((col) => {
-        output += this.indent() + this.column(col) + ',';
+        output += this.indent() + this.column(col, sett) + ',';
         output += EOL;
       });
 
@@ -315,12 +338,12 @@ export default class MSSQLGenerator {
    *
    * @param item Row from query.
    */
-  trigger(item: SqlObject) {
+  trigger(item: SqlObject, sett: Setting) {
     const objectId = `[${item.schema}].[${item.name}]`;
     const type = item.type.trim();
     let output = '';
 
-    switch (this.config.idempotency.triggers) {
+    switch (sett.idempotency.triggers) {
       case 'if-exists-drop':
         output += `IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('${objectId}') AND type = '${type}')`;
         output += EOL;
@@ -345,11 +368,11 @@ export default class MSSQLGenerator {
    *
    * @param item Row from query.
    */
-  type(item: SqlType) {
+  type(item: SqlType, sett: Setting) {
     const objectId = `[${item.schema}].[${item.name}]`;
     let output = '';
 
-    switch (this.config.idempotency.types) {
+    switch (sett.idempotency.types) {
       case 'if-exists-drop':
         output += 'IF EXISTS (';
         output += EOL;
@@ -413,12 +436,12 @@ export default class MSSQLGenerator {
    * @param item Row from query.
    * @param columns Columns from query.
    */
-  tableType(item: SqlType, columns: SqlColumn[]) {
+  tableType(item: SqlType, columns: SqlColumn[], sett: Setting) {
     const objectId = `[${item.schema}].[${item.name}]`;
     const type = item.type.trim();
     let output = '';
 
-    switch (this.config.idempotency.types) {
+    switch (sett.idempotency.types) {
       case 'if-exists-drop':
         output += 'IF EXISTS (';
         output += EOL;
@@ -452,7 +475,7 @@ export default class MSSQLGenerator {
     columns
       .filter((x) => x.object_id === item.object_id)
       .forEach((col, idx, array) => {
-        output += this.indent() + this.column(col);
+        output += this.indent() + this.column(col, sett);
 
         if (idx !== array.length - 1) {
           // not the last column
@@ -472,12 +495,12 @@ export default class MSSQLGenerator {
    *
    * @param item Row from query.
    */
-  view(item: SqlObject) {
+  view(item: SqlObject, sett: Setting) {
     const objectId = `[${item.schema}].[${item.name}]`;
     const type = item.type.trim();
     let output = '';
 
-    switch (this.config.idempotency.views) {
+    switch (sett.idempotency.views) {
       case 'if-exists-drop':
         output += `IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('${objectId}') AND type = '${type}')`;
         output += EOL;
@@ -503,10 +526,10 @@ export default class MSSQLGenerator {
    * @param steps Steps from query.
    * @param schedules Schedules from query.
    */
-  job(job: SqlJob, steps: SqlJobStep[], schedules: SqlJobSchedule[]) {
+  job(job: SqlJob, steps: SqlJobStep[], schedules: SqlJobSchedule[], sett: Setting) {
     let output = '';
 
-    switch (this.config.idempotency.views) {
+    switch (sett.idempotency.views) {
       case 'if-exists-drop':
         output += `IF EXISTS (SELECT 1 FROM msdb.dbo.sysjobs WHERE name = '${job.name}')`;
         output += EOL;
@@ -565,7 +588,7 @@ export default class MSSQLGenerator {
    *
    * @param item Row from query.
    */
-  private column(item: SqlColumn) {
+  private column(item: SqlColumn, sett: Setting) {
     let output = `[${item.name}]`;
     let size: string | number;
 
@@ -614,7 +637,7 @@ export default class MSSQLGenerator {
     output += item.is_nullable ? ' NULL' : ' NOT NULL';
 
     if (item.definition) {
-      if (this.config.includeConstraintName && item.default_name) {
+      if (sett.includeConstraintName && item.default_name) {
         output += ` CONSTRAINT [${item.default_name}]`;
       }
 

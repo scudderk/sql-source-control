@@ -5,6 +5,7 @@ export interface InitOptions {
   webconfig?: string;
   force?: boolean;
   skip?: boolean;
+  config?: string;
 }
 
 /**
@@ -18,6 +19,13 @@ export interface ListOptions {
  * CLI arguments for `pull` command.
  */
 export interface PullOptions {
+  config?: string;
+}
+
+/**
+ * CLI arguments for `start` command.
+ */
+export interface StartOptions {
   config?: string;
 }
 
@@ -36,4 +44,12 @@ export interface PullSingleOptions {
 export interface PushOptions {
   config?: string;
   skip?: boolean;
+}
+
+/**
+ * CLI arguments for `bump` command.
+ */
+export interface BumpOptions {
+  newversion?: string;
+  conn?: string;
 }

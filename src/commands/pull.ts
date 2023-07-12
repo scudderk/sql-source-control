@@ -5,6 +5,7 @@ import ora from 'ora';
 
 import Config from '../common/config';
 import FileUtility from '../common/file-utility';
+import Setting from '../common/setting';
 import MSSQLGenerator from '../generators/mssql';
 import {
   SqlColumn,
@@ -50,7 +51,9 @@ export default class Pull {
     const config = new Config(this.options.config);
     const sett = config.getSetting(this.name);
 
-    this.spinner.start(`Pulling from ${chalk.blue(sett.connection.server)} ...`);
+    this.spinner.start(
+      `Pulling from ${chalk.blue(sett.connection.server)} ...`
+    );
 
     // connect to db
     return new sql.ConnectionPool(sett.connection)
@@ -66,7 +69,7 @@ export default class Pull {
           pool.request().query(typesRead),
         ];
 
-        if (config.output.jobs) {
+        if (sett.output.jobs) {
           queries.push(
             pool.request().query(jobsRead(sett.connection.database)),
             pool.request().query(jobStepsRead(sett.connection.database)),
@@ -80,38 +83,14 @@ export default class Pull {
         return Promise.all<sql.IResult<any>>(queries)
           .then((results) => {
             const tables: sql.IRecordSet<SqlTable> = results[1].recordset;
-            const names = tables.map((item) => `${item.schema}.${item.name}`);
-
-            const matched = multimatch(names, config.data);
-
-            if (!matched.length) {
-              return results;
-            }
-
-            return Promise.all<any>(
-              matched.map((item) => {
-                const match = tables.find(
-                  (table) => item === `${table.schema}.${table.name}`
-                );
-
-                return pool
-                  .request()
-                  .query(`SELECT * FROM [${match.schema}].[${match.name}]`)
-                  .then((result) => ({
-                    hasIdentity: match.identity_count > 0,
-                    name: match.name,
-                    result,
-                    schema: match.schema,
-                  }));
-              })
-            ).then((data) => [...results, ...data]);
+            return results;
           })
           .then((results) => {
             pool.close();
             return results;
           });
       })
-      .then((results) => this.writeFiles(config, results))
+      .then((results) => this.writeFiles(config, sett, results))
       .catch((error) => {
         console.error(error);
         this.spinner.fail(error);
@@ -124,7 +103,7 @@ export default class Pull {
    * @param config Current configuration to use.
    * @param results Array of data sets from SQL queries.
    */
-  private writeFiles(config: Config, results: any[]) {
+  private writeFiles(config: Config, sett: Setting, results: any[]) {
     // note: array order MUST match query promise array
     const objects: SqlObject[] = results[0].recordset;
     const tables: SqlTable[] = results[1].recordset;
@@ -144,7 +123,7 @@ export default class Pull {
     const data: SqlDataResult[] = results.slice(11);
 
     const generator = new MSSQLGenerator(config);
-    const file = new FileUtility(config);
+    const file = new FileUtility(config, sett);
 
     // schemas
     tables
@@ -155,7 +134,7 @@ export default class Pull {
         const name = `${item.name}.sql`;
         const content = generator.schema(item);
 
-        file.write(config.output.schemas, name, content);
+        file.write(sett.output.schemas, name, content);
       });
 
     // stored procedures
@@ -163,41 +142,41 @@ export default class Pull {
       .filter((item) => item.type.trim() === 'P')
       .forEach((item) => {
         const name = `${item.name}.sql`;
-        let content = generator.storedProcedure(item);
+        let content = generator.storedProcedure(item, sett);
         content += generator.permissions(permissions, name);
 
-        file.write(config.output.procs, name, content);
+        file.write(sett.output.procs, name, content);
       });
-      // views
-      objects
+    // views
+    objects
       .filter((item) => item.type.trim() === 'V')
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
-        const content = generator.view(item);
-        
-        file.write(config.output.views, name, content);
+        const content = generator.view(item, sett);
+
+        file.write(sett.output.views, name, content);
       });
-      
-      // functions
-      objects
+
+    // functions
+    objects
       .filter((item) => ['TF', 'IF', 'FN'].indexOf(item.type.trim()) !== -1)
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
-        const content = generator.function(item);
-        
-        file.write(config.output.functions, name, content);
+        const content = generator.function(item, sett);
+
+        file.write(sett.output.functions, name, content);
       });
-      
+
     // triggers
     objects
-    .filter((item) => item.type.trim() === 'TR')
-    .forEach((item) => {
-      const name = `${item.schema}.${item.name}.sql`;
-      const content = generator.trigger(item);
-      
-      file.write(config.output.triggers, name, content);
-    });
-    
+      .filter((item) => item.type.trim() === 'TR')
+      .forEach((item) => {
+        const name = `${item.schema}.${item.name}.sql`;
+        const content = generator.trigger(item, sett);
+
+        file.write(sett.output.triggers, name, content);
+      });
+
     // tables
     tables.forEach((item) => {
       const name = `${item.schema}.${item.name}.sql`;
@@ -206,51 +185,51 @@ export default class Pull {
         columns,
         primaryKeys,
         foreignKeys,
-        indexes
-        );
-        
-        file.write(config.output.tables, name, content);
-      });
-      
-      // types
-      types
+        indexes,
+        sett
+      );
+
+      file.write(sett.output.tables, name, content);
+    });
+
+    // types
+    types
       .filter((item) => !item.type)
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
-        const content = generator.type(item);
-        
-        file.write(config.output.types, name, content);
+        const content = generator.type(item, sett);
+
+        file.write(sett.output.types, name, content);
       });
-      
-      // table types
-      types
+
+    // table types
+    types
       .filter((item) => item.type && item.type.trim() === 'TT')
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
-        const content = generator.tableType(item, columns);
-        
-        file.write(config.output.types, name, content);
-      });
-      
-      // data
-      data.forEach((item) => {
-        const name = `${item.schema}.${item.name}.sql`;
-        const content = generator.data(item);
-        
-        file.write(config.output.data, name, content);
-      });
-      
-      // jobs
-      jobs.forEach((item) => {
-        const steps = jobSteps.filter((x) => x.job_id === item.job_id);
-        const schedules = jobSchedules.filter((x) => x.job_id === item.job_id);
-        const name = `${item.name}.sql`;
-        const content = generator.job(item, steps, schedules);
-        
-        file.write(config.output.jobs, name, content);
+        const content = generator.tableType(item, columns, sett);
+
+        file.write(sett.output.types, name, content);
       });
 
-    //file.writeUpdate();
+    // data
+    data.forEach((item) => {
+      const name = `${item.schema}.${item.name}.sql`;
+      const content = generator.data(item, sett);
+
+      file.write(sett.output.data, name, content);
+    });
+
+    // jobs
+    jobs.forEach((item) => {
+      const steps = jobSteps.filter((x) => x.job_id === item.job_id);
+      const schedules = jobSchedules.filter((x) => x.job_id === item.job_id);
+      const name = `${item.name}.sql`;
+      const content = generator.job(item, steps, schedules, sett);
+
+      file.write(sett.output.jobs, name, content);
+    });
+
     const msg = file.finalize();
     this.spinner.succeed(msg);
   }

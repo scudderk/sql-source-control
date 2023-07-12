@@ -1,6 +1,5 @@
-[![NPM Version](https://badge.fury.io/js/sql-source-control.svg)](https://badge.fury.io/js/sql-source-control)
-[![CI](https://github.com/justinlettau/sql-source-control/workflows/CI/badge.svg)](https://github.com/justinlettau/sql-source-control/actions)
-[![Build status](https://ci.appveyor.com/api/projects/status/a92idr95kkly8lgt/branch/master?svg=true)](https://ci.appveyor.com/project/justinlettau/sql-source-control/branch/master)
+[![NPM Version](https://badge.fury.io/js/sql-source-control-psl.svg)](https://badge.fury.io/js/sql-source-control-psl)
+[![CI](https://github.com/scudderk/sql-source-control-psl/workflows/CI/badge.svg)](https://github.com/scudderk/sql-source-control-psl/actions)
 
 # SQL Source Control
 
@@ -30,7 +29,7 @@ CLI for scripting SQL objects into a flat file structure for use with source con
 # Installation
 
 ```bash
-npm install -g sql-source-control
+npm install -g sql-source-control-psl
 ```
 
 # Usage
@@ -59,6 +58,29 @@ Options:
 | `--force`     | `-f`  | `boolean` | Overwrite an existing config file, if present.  | n/a     |
 | `--skip`      | `-s`  | `boolean` | Use defaults and not prompt you for any options | n/a     |
 | `--webconfig` | `-w`  | `string`  | Relative path to a `Web.config` file.           | n/a     |
+
+### `ssc start`
+
+Start the day by running, this will start the watch over all your source controlled database folders.
+
+```bash
+ssc start
+```
+### `ssc bash`
+
+To increase the version ssc is uploading to, just run the `bump` command with the new version parameter
+
+```bash
+ssc bump
+```
+
+Options:
+
+| Option        | Alias | Type      | Description                                     | Default |
+| ------------- | ----- | --------- | ----------------------------------------------- | ------- |
+| `--newversion`     | `-nv`  | `string` | Specific the new version you wish to set for the connection  | n/a     |
+| `--conn`      | `-c`  | `string` | The name of the connection you wish to update | n/a     |
+
 
 ### `ssc list`
 

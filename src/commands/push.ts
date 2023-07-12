@@ -5,9 +5,8 @@ import * as inquirer from 'inquirer';
 import * as sql from 'mssql';
 import ora from 'ora';
 import { EOL } from 'os';
-
 import Config from '../common/config';
-import Connection from '../common/connection';
+import Setting from '../common/setting';
 import { PushOptions } from './interfaces';
 
 export default class Push {
@@ -23,7 +22,6 @@ export default class Push {
    */
   invoke() {
     const config = new Config(this.options.config);
-    const conn = config.getConnection(this.name);
     const prompt = inquirer.createPromptModule();
     return prompt<inquirer.Answers>([
       {
@@ -46,7 +44,6 @@ export default class Push {
           throw new Error('Command aborted!');
         }
       })
-      .then(() => this.batch(config, conn))
       .then(() => {
         this.spinner.succeed('Successfully pushed!');
       })
@@ -61,11 +58,11 @@ export default class Push {
    * @param config Configuration used to execute commands.
    * @param conn Connection used to execute commands.
    */
-  private batch(config: Config, conn: Connection) {
-    const files = this.getFilesOrdered(config);
-    let promise = new sql.ConnectionPool(conn).connect();
+  private batch(config: Config, sett: Setting) {
+    const files = this.getFilesOrdered(sett);
+    let promise = new sql.ConnectionPool(sett.connection).connect();
 
-    this.spinner.start(`Pushing to ${chalk.blue(conn.server)} ...`);
+    this.spinner.start(`Pushing to ${chalk.blue(sett.connection.server)} ...`);
 
     files.forEach((file) => {
       const content = fs.readFileSync(file, 'utf8');
@@ -89,23 +86,23 @@ export default class Push {
    *
    * @param config Configuration used to search for connection.
    */
-  private getFilesOrdered(config: Config) {
+  private getFilesOrdered(setting: Setting) {
     const output: string[] = [];
     const directories = [
-      config.output.schemas,
-      config.output.tables,
-      config.output.types,
-      config.output.views,
-      config.output.functions,
-      config.output.procs,
-      config.output.triggers,
-      config.output.data,
-      config.output.jobs,
+      setting.output.schemas,
+      setting.output.tables,
+      setting.output.types,
+      setting.output.views,
+      setting.output.functions,
+      setting.output.procs,
+      setting.output.triggers,
+      setting.output.data,
+      setting.output.jobs
     ];
 
     directories.forEach((dir) => {
       if (dir) {
-        const files = glob.sync(`${config.getRoot()}/${dir}/**/*.sql`);
+        const files = glob.sync(`${setting.getRoot()}/${dir}/**/*.sql`);
         output.push(...files);
       }
     });

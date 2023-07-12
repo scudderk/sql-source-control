@@ -21,11 +21,6 @@ export interface OperationCounts {
  */
 export interface IConfig {
   settings?: string | ISetting[];
-  connections?: string | IConnection[];
-  files?: string[];
-  data?: string[];
-  output?: OutputConfig;
-  idempotency?: IdempotencyConfig;
 }
 
 /**
@@ -37,6 +32,16 @@ export interface IConnection {
   port?: number;
   user: string;
   password: string;
+}
+export class Connection implements IConnection {
+
+  public constructor(
+    public server: string,
+    public database: string,
+    public port: number,
+    public user: string,
+    public password: string,
+  ) { }
 }
 
 /**
@@ -52,6 +57,22 @@ export interface ISetting {
 }
 
 /**
+ * option object properties.
+ */
+export interface IOption {
+  enableArithAbort: boolean;
+  cryptoCredentialsDetails: ICryptoCredentialsDetails;
+  encrypt: boolean;
+}
+
+/**
+ * CryptoCredentialsDetails object properties.
+ */
+export interface ICryptoCredentialsDetails {
+  minVersion: string;
+}
+
+/**
  * Supported idempotency configuration.
  */
 export interface IdempotencyConfig {
@@ -63,6 +84,7 @@ export interface IdempotencyConfig {
   triggers?: IdempotencyObject;
   types?: IdempotencyObject;
   views?: IdempotencyObject;
+  temps?: IdempotencyObject;
 }
 
 /**
@@ -79,4 +101,5 @@ export interface OutputConfig {
   triggers?: string | false;
   types?: string | false;
   views?: string | false;
+  temps?: string | false;
 }
