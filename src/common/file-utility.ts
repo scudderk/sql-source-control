@@ -76,25 +76,13 @@ export default class FileUtility {
     // remove unsafe characters
     file = filenamify(file);
 
-    if (!this.shouldWrite(file)) {
-      return;
-    }
+    file = path.join(
+      this.sett.output.root,
+      dir,
+      file
+    );
 
-    file = path.join(/*this.config.getRoot()*/this.sett.output.root, dir, file);
-
-    switch (this.config.eol) {
-      case 'crlf':
-        content = eol.crlf(content);
-        break;
-      case 'lf':
-        content = eol.lf(content);
-        break;
-      case 'auto':
-      default:
-        content = eol.auto(content);
-        break;
-    }
-
+    content = eol.auto(content);
     content = content.trim();
 
     const cacheKey = this.normalize(file);
