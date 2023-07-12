@@ -347,3 +347,27 @@ export const jobSchedulesRead = () => `
   ORDER BY
     s.name
 `;
+/**
+ * Drop SQL trigger if exists
+ */
+export const dropTriggerWrite = `
+IF  EXISTS(SELECT * FROM sys.triggers WHERE parent_class_desc = 'DATABASE' AND name = N'log') DROP TRIGGER[log] ON DATABASE
+`;
+/**
+ * Create SQL trigger
+ */
+export const triggerWrite = (rootPath: string, server: string) => `
+CREATE TRIGGER [log] ON 
+DATABASE AFTER CREATE_PROCEDURE AS
+DECLARE @data XML
+DECLARE @SQL VARCHAR(1000)
+SET @data = EVENTDATA()
+SET @SQL = 'bcp "SELECT ''' + @data.value('(/EVENT_INSTANCE/ObjectName)[1]', 'VARCHAR(100)') + ''' FOR XML PATH('''')" queryout "${rootPath}\\temp_files\\' + @data.value('(/EVENT_INSTANCE/ObjectName)[1]', 'VARCHAR(100)') + '.P" -T -c -t, -S ${server}'
+EXEC xp_cmdshell @SQL
+`;
+/**
+ * Drop SQL trigger if exists
+ */
+export const enableTriggerWrite = `
+ENABLE TRIGGER[log] ON DATABASE
+`;

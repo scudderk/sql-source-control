@@ -32,44 +32,6 @@ CLI for scripting SQL objects into a flat file structure for use with source con
 npm install -g sql-source-control-psl
 ```
 
-You must then execute the following trigger on any database you wish to use it with:
-
-```sql
-IF EXISTS (
-  SELECT *
-  FROM sys.triggers
-  WHERE parent_class_desc = 'DATABASE'
-    AND name = N'log'
-)
-
-DROP TRIGGER [log]
-	ON DATABASE 
-GO
-	
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON 
-GO
-
-CREATE TRIGGER [log] ON 
-DATABASE AFTER CREATE_PROCEDURE AS
-
-DECLARE @data XML
-DECLARE @SQL VARCHAR(1000)
-
-SET @data = EVENTDATA()
-SET @SQL = 'bcp "SELECT ''' + @data.value('(/EVENT_INSTANCE/ObjectName)[1]', 'VARCHAR(100)') + ''' FOR XML PATH('''')" queryout "<DIRECTORY_MATCHES_SSC.JSON_ROOT_DIR>\temp_files\' + @data.value('(/EVENT_INSTANCE/ObjectName)[1]', 'VARCHAR(100)') + '.P" -T -c -t, -S <DATABASE_NAME>'
-
-EXEC xp_cmdshell @SQL
-
-GO 
-
-ENABLE TRIGGER [log]
-	ON DATABASE
-GO
-```
-
 # Usage
 
 Commands are directory specific, so run all commands in the directory you want the scripts created in.

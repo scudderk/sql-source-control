@@ -1,13 +1,15 @@
 import * as inquirer from 'inquirer';
-import { Connection } from 'tedious';
-
+import sql from 'mssql';
+import fs from 'fs';
+import { dropTriggerWrite, enableTriggerWrite, triggerWrite } from '../queries/mssql';
 import Config from '../common/config';
 import Setting from '../common/setting';
 import { PathChoices } from './eums';
 import { InitOptions } from './interfaces';
+import { Connection, IConnection } from '../common/interfaces';
 
 export default class Init {
-  constructor(private options: InitOptions) {}
+  constructor(private options: InitOptions) { }
 
   /**
    * Invoke action.
@@ -23,10 +25,24 @@ export default class Init {
       return console.error('Config file already exists!');
     }
     const prompt = inquirer.createPromptModule();
-    return prompt(this.getQuestions(sett, !!webConfigConns))
-      .then((answers) => this.writeFiles(answers));
-    return console.error('Code needs to be amended!');
+    return prompt(this.getQuestions(!!webConfigConns))
+      .then((answers) => {
+        const sett: Setting = this.writeFiles(answers);
         this.createFolderIfNotExists(`${sett.output.root}\\${sett.output.temps}`);
+        // connect to db
+        const sqlConn = new sql.ConnectionPool(sett.connection)
+          .connect()
+          .then((pool) => {
+            pool.request().query(dropTriggerWrite).then(() => {
+              pool.request().query(triggerWrite(answers.root, answers.server)).then(() => {
+                pool.request().query(enableTriggerWrite)
+              })
+            })
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      });
   }
 
   /**
@@ -220,17 +236,16 @@ export default class Init {
       },
       includeConstraintName: true,
       loadFromObject: null,
-      loadFromString: null
+      loadFromString: null,
     };
 
     if (answers.path === PathChoices.WebConfig) {
-      Config.write({ connections: Config.defaultWebConfigFile });
     } else if (answers.path === PathChoices.ConnsConfig) {
-      Config.write({ connections: Config.defaultConnectionsJsonFile });
       Config.write({ settings: [sett] }, Config.defaultConnectionsJsonFile);
     } else {
       Config.write({ settings: [sett] });
     }
+    return sett;
   }
   private createFolderIfNotExists = (folderPath: string) => {
     if (!fs.existsSync(folderPath)) {

@@ -5,6 +5,7 @@ export interface InitOptions {
   webconfig?: string;
   force?: boolean;
   skip?: boolean;
+  config?: string;
 }
 
 /**
