@@ -1,3 +1,5 @@
+import { EOL } from "os";
+
 /**
  * Get SQL table information.
  */
@@ -348,24 +350,39 @@ export const jobSchedulesRead = () => `
 /**
  * Drop SQL trigger if exists
  */
-export const dropTriggerWrite = `
-IF  EXISTS(SELECT * FROM sys.triggers WHERE parent_class_desc = 'DATABASE' AND name = N'log') DROP TRIGGER[log] ON DATABASE
-`;
+export const dropTriggerWrite = () => {
+  const output = `IF  EXISTS(SELECT * FROM sys.triggers WHERE parent_class_desc = 'DATABASE' AND name = N'log') DROP TRIGGER[log] ON DATABASE`;
+
+  return output;
+};
 /**
  * Create SQL trigger
  */
-export const triggerWrite = (rootPath: string, server: string) => `
-CREATE TRIGGER [log] ON 
-DATABASE AFTER CREATE_PROCEDURE AS
-DECLARE @data XML
-DECLARE @SQL VARCHAR(1000)
-SET @data = EVENTDATA()
-SET @SQL = 'bcp "SELECT ''' + @data.value('(/EVENT_INSTANCE/ObjectName)[1]', 'VARCHAR(100)') + ''' FOR XML PATH('''')" queryout "${rootPath}\\temp_files\\' + @data.value('(/EVENT_INSTANCE/ObjectName)[1]', 'VARCHAR(100)') + '.P" -T -c -t, -S ${server}'
-EXEC xp_cmdshell @SQL
-`;
+export const triggerWrite = (rootPath: string, server: string) => {
+  let output = EOL;
+  output += EOL;
+
+  output += 'CREATE TRIGGER [log] ON';
+  output += EOL;
+  output += 'DATABASE AFTER CREATE_PROCEDURE AS';
+  output += EOL;
+  output += 'DECLARE @data XML';
+  output += EOL;
+  output += 'DECLARE @SQL VARCHAR(1000)';
+  output += EOL;
+  output += 'SET @data = EVENTDATA()';
+  output += EOL;
+  output += `SET @SQL = 'bcp "SELECT ''' + @data.value('(/EVENT_INSTANCE/ObjectName)[1]', 'VARCHAR(100)') + ''' FOR XML PATH('''')" queryout "${rootPath}\\temp_files\\' + @data.value('(/EVENT_INSTANCE/ObjectName)[1]', 'VARCHAR(100)') + '.P" -T -c -t, -S ${server}'`;
+  output += EOL;
+  output += 'EXEC xp_cmdshell @SQL';
+  
+  return output;
+};
 /**
  * Drop SQL trigger if exists
- */
-export const enableTriggerWrite = `
-ENABLE TRIGGER[log] ON DATABASE
-`;
+*/
+export const enableTriggerWrite = () => {
+  const output = `ENABLE TRIGGER[log] ON DATABASE`;
+
+  return output;
+};
