@@ -5,10 +5,8 @@ import * as inquirer from 'inquirer';
 import * as sql from 'mssql';
 import ora from 'ora';
 import { EOL } from 'os';
-
 import Config from '../common/config';
 import Setting from '../common/setting';
-//import Connection from '../common/connection';
 import { PushOptions } from './interfaces';
 
 export default class Push {
@@ -24,7 +22,6 @@ export default class Push {
    */
   invoke() {
     const config = new Config(this.options.config);
-    //const conn = config.getConnection(this.name);
     const prompt = inquirer.createPromptModule();
     return prompt<inquirer.Answers>([
       {
@@ -47,7 +44,6 @@ export default class Push {
           throw new Error('Command aborted!');
         }
       })
-      //.then(() => this.batch(config, conn))
       .then(() => {
         this.spinner.succeed('Successfully pushed!');
       })

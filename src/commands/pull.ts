@@ -55,7 +55,6 @@ export default class Pull {
       `Pulling from ${chalk.blue(sett.connection.server)} ...`
     );
 
-    //console.log(sett);
     // connect to db
     return new sql.ConnectionPool(sett.connection)
       .connect()
@@ -84,31 +83,7 @@ export default class Pull {
         return Promise.all<sql.IResult<any>>(queries)
           .then((results) => {
             const tables: sql.IRecordSet<SqlTable> = results[1].recordset;
-            const names = tables.map((item) => `${item.schema}.${item.name}`);
-
-            const matched = multimatch(names, config.data);
-
-            if (!matched.length) {
-              return results;
-            }
-
-            return Promise.all<any>(
-              matched.map((item) => {
-                const match = tables.find(
-                  (table) => item === `${table.schema}.${table.name}`
-                );
-
-                return pool
-                  .request()
-                  .query(`SELECT * FROM [${match.schema}].[${match.name}]`)
-                  .then((result) => ({
-                    hasIdentity: match.identity_count > 0,
-                    name: match.name,
-                    result,
-                    schema: match.schema,
-                  }));
-              })
-            ).then((data) => [...results, ...data]);
+            return results;
           })
           .then((results) => {
             pool.close();
@@ -254,7 +229,6 @@ export default class Pull {
       file.write(config.output.jobs, name, content);
     });
 
-    //file.writeUpdate();
     const msg = file.finalize();
     this.spinner.succeed(msg);
   }

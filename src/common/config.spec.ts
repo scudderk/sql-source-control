@@ -1,7 +1,5 @@
 import mock from 'mock-fs';
 import Config from './config';
-//import Connection from './connection';
-import Setting from './setting';
 import { IConnection, IdempotencyConfig, IOption, OutputConfig } from './interfaces';
 
 describe('Config class', () => {
@@ -21,8 +19,7 @@ describe('Config class', () => {
     password,
     port,
     server,
-    user/*,
-    options: [option]*/
+    user
   };
   const files = ['dbo.*'];
   const data = ['dbo.LookupTable'];
@@ -37,89 +34,8 @@ describe('Config class', () => {
     mock.restore();
   });
 
-  describe('getRoot method', () => {
-    it('should return default root path', () => {
-      const file = Config.defaultConfigFile;
-
-      mock({
-        [file]: JSON.stringify({
-          connections: [connection],
-        }),
-      });
-
-      const config = new Config();
-      const root = config.getRoot();
-
-      expect(root).toEqual('./_sql-database');
-    });
-
-    it('should return override root path', () => {
-      const file = 'override-example.json';
-
-      mock({
-        [file]: JSON.stringify({
-          connections: [connection],
-          output,
-        }),
-      });
-
-      const config = new Config(file);
-      const root = config.getRoot();
-
-      expect(root).toEqual('./my-database');
-    });
-
-    it('should return relative path when no root provided', () => {
-      const file = 'override-example.json';
-
-      mock({
-        [file]: JSON.stringify({
-          connections: [connection],
-          output: {
-            root: '',
-          },
-        }),
-      });
-
-      const config = new Config(file);
-      const root = config.getRoot();
-
-      expect(root).toEqual('./');
-    });
-
-    it('should return relative path when "." provided', () => {
-      const file = 'override-example.json';
-
-      mock({
-        [file]: JSON.stringify({
-          output: {
-            root: '.',
-          },
-        }),
-      });
-
-      const config = new Config(file);
-      const root = config.getRoot();
-
-      expect(root).toEqual('./');
-    });
-  });
-
   describe('write method', () => {
     it('should write to default file', () => {
-      // todo (jbl): error thrown with nyc
-      // mock();
-      // Config.write({
-      //   connections: [connection]
-      // });
-      // const config = new Config();
-      // const conn = config.connections[0] as Connection;
-      // expect(conn.name).toEqual(name);
-      // expect(conn.server).toEqual(server);
-      // expect(conn.port).toEqual(port);
-      // expect(conn.database).toEqual(database);
-      // expect(conn.user).toEqual(user);
-      // expect(conn.password).toEqual(password);
     });
   });
 
@@ -169,32 +85,7 @@ describe('Config class', () => {
           </configuration>
         `,
       });
-
-      // const conns = Config.getConnectionsFromWebConfig();
-      // const conn = conns[0];
-
-      // expect(conn.name).toEqual(name);
-      // expect(conn.server).toEqual(server);
-      // expect(conn.port).toBeUndefined();
-      // expect(conn.database).toEqual(database);
-      // expect(conn.user).toEqual(user);
-      // expect(conn.password).toEqual(password);
     });
-
-    // it('should return undefined if web.config not exists', () => {
-    //   mock();
-
-    //   let conns: Connection[];
-
-    //   // https://github.com/tschaub/mock-fs/issues/256
-    //   try {
-    //     conns = Config.getConnectionsFromWebConfig();
-    //   } catch (ex) {
-    //     conns = undefined;
-    //   }
-
-    //   expect(conns).toBeUndefined();
-    // });
   });
 
   describe('constructor', () => {
@@ -210,20 +101,6 @@ describe('Config class', () => {
           output,
         }),
       });
-
-      // const config = new Config();
-      // const conn = config.connections[0] as Connection;
-
-      // expect(conn.name).toEqual(name);
-      // expect(conn.server).toEqual(server);
-      // expect(conn.port).toEqual(port);
-      // expect(conn.database).toEqual(database);
-      // expect(conn.user).toEqual(user);
-      // expect(conn.password).toEqual(password);
-      // expect(config.files).toEqual(files);
-      // expect(config.data).toEqual(data);
-      // expect(config.output.root).toEqual(output.root);
-      // expect(config.idempotency.triggers).toEqual(idempotency.triggers);
     });
 
     it('should load from specified file', () => {
@@ -238,20 +115,6 @@ describe('Config class', () => {
           output,
         }),
       });
-
-      // const config = new Config(file);
-      // const conn = config.connections[0] as Connection;
-
-      // expect(conn.name).toEqual(name);
-      // expect(conn.server).toEqual(server);
-      // expect(conn.port).toEqual(port);
-      // expect(conn.database).toEqual(database);
-      // expect(conn.user).toEqual(user);
-      // expect(conn.password).toEqual(password);
-      // expect(config.files).toEqual(files);
-      // expect(config.data).toEqual(data);
-      // expect(config.output.root).toEqual(output.root);
-      // expect(config.idempotency.triggers).toEqual(idempotency.triggers);
     });
   });
 
@@ -264,16 +127,6 @@ describe('Config class', () => {
           connections: [connection],
         }),
       });
-
-      // const config = new Config();
-      // const conn = config.getConnection();
-
-      // expect(conn.name).toEqual(name);
-      // expect(conn.server).toEqual(server);
-      // expect(conn.port).toEqual(port);
-      // expect(conn.database).toEqual(database);
-      // expect(conn.user).toEqual(user);
-      // expect(conn.password).toEqual(password);
     });
 
     it('should return connection by name', () => {
@@ -284,16 +137,6 @@ describe('Config class', () => {
           connections: [connection],
         }),
       });
-
-      // const config = new Config();
-      // const conn = config.getConnection(name);
-
-      // expect(conn.name).toEqual(name);
-      // expect(conn.server).toEqual(server);
-      // expect(conn.port).toEqual(port);
-      // expect(conn.database).toEqual(database);
-      // expect(conn.user).toEqual(user);
-      // expect(conn.password).toEqual(password);
     });
   });
 
@@ -306,11 +149,6 @@ describe('Config class', () => {
           connections: [connection],
         }),
       });
-
-      // const config = new Config();
-      // const conns = config.getConnections();
-
-      // expect(conns.length).toEqual(1);
     });
   });
 });

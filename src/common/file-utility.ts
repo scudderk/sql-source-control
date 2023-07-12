@@ -130,20 +130,6 @@ export default class FileUtility {
   }
 
   /**
-   * Check if a file passes the glob pattern.
-   *
-   * @param file File path to check.
-   */
-  private shouldWrite(file: string) {
-    if (!this.config.files || !this.config.files.length) {
-      return true;
-    }
-
-    const results = multimatch([file], this.config.files);
-    return !!results.length;
-  }
-
-  /**
    * Check if a file existed.
    *
    * @param file File path to check.
@@ -260,64 +246,16 @@ export default class FileUtility {
                 // resolve();
             });
         });
-    });
-  
-  
-  
-  
-    //return new Promise((resolve, reject) => {
-        if (this.sett.output.procs != false) {
-            /*fs.readdir(spDirectory, (err, spFiles) => {
-                if (err) {
-                    console.log(err);
-                    return reject(err);
-                }
-                const tempFiles = spFiles.map(file => path.join(spDirectory, file));
-                files.push(tempFiles[0]);
-            });*/
-  
-            /*files.push(this.readDirectory(storedProcedureDirectory).then(filenames => {
-                return filenames;
-            }));*/
-            //files.push(this.readDirectory(storedProcedureDirectory));
-            /*var test = this.readDirectory(storedProcedureDirectory).then((filenames) => {
-                return filenames;
-            });*/
-            //console.log(test.resolve)
-            // setTimeout(function() {console.log(test)}, 2000);
-            //console.log(files);
-        }
-        if (this.sett.output.functions != false) {
-            //files.concat(this.readDirectory(functionDirectory));
-            /*fs.readdir(spDirectoryFunction, (err, funcFiles) => {
-                if (err) {
-                    console.log(err);
-                    return reject(err);
-                }
-                const tempFiles = funcFiles.map(file => path.join(spDirectoryFunction, file));
-                files.push(tempFiles[0]);
-            })*/
-        }
-        //Read all files in parallel
-        /*async.map(files, fs.readFile, (err, results) => {
-            //console.log(results);
-        });*/
-        /*async.map(files, fs.readFile, (err, results) => {
-            if (err) {
-                return reject(err);
-            }
-            //Write the joined results to destination
-            fs.writeFile(filesDestinationDirectory, results.join("\n\n\n\n"), (err) => {
-                if (err) {
-                    return reject(err);
-                }
-                console.log(chalk.bgMagenta.black.bold('\nUpdate file has been generated.'));
-                // resolve();
-            });
-        });*/
-        //resolve();
-    //});
-  };
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+
+    if (this.sett.output.procs != false) {
+    }
+    if (this.sett.output.functions != false) {
+    }
+  }
   private mergeArrays = function (arr1, arr2) {
     if (arr2.length == 1) {
       arr1.push(arr2[0]);

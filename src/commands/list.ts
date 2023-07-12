@@ -11,24 +11,12 @@ export default class List {
    */
   invoke() {
     const config = new Config(this.options.config);
-    //const connections = config.getConnections();
     const settings = config.getSettings();
     const placeholder = 'n/a';
 
     const table = new Table({
       head: ['Name', 'Server', 'Port', 'Database', 'User', 'Password', 'Options'],
     });
-
-    // connections.forEach((conn) => {
-    //   table.push([
-    //     conn.name || placeholder,
-    //     conn.server || placeholder,
-    //     conn.port || placeholder,
-    //     conn.database || placeholder,
-    //     conn.user || placeholder,
-    //     conn.password || placeholder,
-    //   ]);
-    // });
 
     settings.forEach((sett) => {
       table.push([
@@ -40,7 +28,5 @@ export default class List {
         sett.connection.password || placeholder
       ]);
     });
-
-    // console.log(table.toString());
   }
 }

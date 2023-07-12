@@ -22,17 +22,6 @@ export default class Init {
       // don't overwrite existing config file
       return console.error('Config file already exists!');
     }
-
-    //if (webConfigConns) {
-    //  // use options from web config
-    //  sett.loadFromObject(webConfigConns[0]);
-    //}
-
-    //if (this.options.skip) {
-    //  // skip prompts and create with defaults
-    //  Config.write({ connections: this.options.webconfig || [conn] });
-    //  return;
-    //}
     const prompt = inquirer.createPromptModule();
     return prompt(this.getQuestions(sett, !!webConfigConns))
       .then((answers) => this.writeFiles(answers));

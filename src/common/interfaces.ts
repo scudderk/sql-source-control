@@ -21,11 +21,6 @@ export interface OperationCounts {
  */
 export interface IConfig {
   settings?: string | ISetting[];
-  connections?: string | IConnection[];
-  files?: string[];
-  data?: string[];
-  output?: OutputConfig;
-  idempotency?: IdempotencyConfig;
 }
 
 /**
@@ -37,7 +32,6 @@ export interface IConnection {
   port?: number;
   user: string;
   password: string;
-  //options?: string | IOption[];
 }
 
 /**
