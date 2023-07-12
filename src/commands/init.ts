@@ -1,6 +1,8 @@
 import * as inquirer from 'inquirer';
 import sql from 'mssql';
 import fs from 'fs';
+import ora from 'ora';
+import chalk from 'chalk';
 import { dropTriggerWrite, enableTriggerWrite, triggerWrite } from '../queries/mssql';
 import Config from '../common/config';
 import Setting from '../common/setting';
@@ -11,21 +13,35 @@ export default class Init {
   constructor(private options: InitOptions) { }
 
   /**
+   * Spinner instance.
+   */
+  private spinner = ora();
+
+  /**
    * Invoke action.
    */
   invoke() {
     const prompt = inquirer.createPromptModule();
     return prompt(this.getQuestions(false))
-      .then((answers) => {
+      .then(async (answers) => {
         const sett: Setting = this.writeFiles(answers);
-        this.createFolderIfNotExists(`${sett.output.root}\\${sett.output.temps}`);
+        const tempFolderSpinner = this.spinner.start(
+          `Creating temp folder...`
+        );
+        await this.createFolderIfNotExists(`${sett.output.root}\\${sett.output.temps}`);
+        tempFolderSpinner.stop();
         // connect to db
+        const sqlSpinner = this.spinner.start(
+          `Creating SQL database trigger...`
+        );
         new sql.ConnectionPool(sett.connection)
           .connect()
           .then((pool) => {
             pool.request().query(dropTriggerWrite).then(() => {
               pool.request().query(triggerWrite(answers.root, answers.server)).then(() => {
                 pool.request().query(enableTriggerWrite)
+              }).then(() => {
+                sqlSpinner.stop();
               })
             })
           })
