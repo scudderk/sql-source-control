@@ -117,14 +117,14 @@ function writeFiles(
     // stored procedures
     case 'P':
       name = `${name}.sql`;
-      content = generator.storedProcedure(objects[0]);
+      content = generator.storedProcedure(objects[0], sett);
       content += generator.permissions(permissions, name.split('.')[0]);
       file.write(`${sett.currentVersion}/${sett.output.procs}`, name, content);
       break;
     // views
     case 'V':
       name = `${name}.sql`;
-      content = generator.view(objects[0]);
+      content = generator.view(objects[0], sett);
       file.write(sett.output.views, name, content);
       break;
     // functions
@@ -132,7 +132,7 @@ function writeFiles(
     case 'IF':
     case 'FN':
       name = `${name}.sql`;
-      content = generator.function(objects[0]);
+      content = generator.function(objects[0], sett);
       file.write(sett.output.functions, name, content);
       break;
     default:

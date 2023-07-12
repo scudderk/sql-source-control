@@ -59,7 +59,7 @@ export default class Push {
    * @param conn Connection used to execute commands.
    */
   private batch(config: Config, sett: Setting) {
-    const files = this.getFilesOrdered(config);
+    const files = this.getFilesOrdered(sett);
     let promise = new sql.ConnectionPool(sett.connection).connect();
 
     this.spinner.start(`Pushing to ${chalk.blue(sett.connection.server)} ...`);
@@ -86,23 +86,23 @@ export default class Push {
    *
    * @param config Configuration used to search for connection.
    */
-  private getFilesOrdered(config: Config) {
+  private getFilesOrdered(setting: Setting) {
     const output: string[] = [];
     const directories = [
-      config.output.schemas,
-      config.output.tables,
-      config.output.types,
-      config.output.views,
-      config.output.functions,
-      config.output.procs,
-      config.output.triggers,
-      config.output.data,
-      config.output.jobs
+      setting.output.schemas,
+      setting.output.tables,
+      setting.output.types,
+      setting.output.views,
+      setting.output.functions,
+      setting.output.procs,
+      setting.output.triggers,
+      setting.output.data,
+      setting.output.jobs
     ];
 
     directories.forEach((dir) => {
       if (dir) {
-        const files = glob.sync(`${config.getRoot()}/${dir}/**/*.sql`);
+        const files = glob.sync(`${setting.getRoot()}/${dir}/**/*.sql`);
         output.push(...files);
       }
     });

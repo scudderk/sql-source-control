@@ -69,7 +69,7 @@ export default class Pull {
           pool.request().query(typesRead),
         ];
 
-        if (config.output.jobs) {
+        if (sett.output.jobs) {
           queries.push(
             pool.request().query(jobsRead(sett.connection.database)),
             pool.request().query(jobStepsRead(sett.connection.database)),
@@ -134,7 +134,7 @@ export default class Pull {
         const name = `${item.name}.sql`;
         const content = generator.schema(item);
 
-        file.write(config.output.schemas, name, content);
+        file.write(sett.output.schemas, name, content);
       });
 
     // stored procedures
@@ -142,19 +142,19 @@ export default class Pull {
       .filter((item) => item.type.trim() === 'P')
       .forEach((item) => {
         const name = `${item.name}.sql`;
-        let content = generator.storedProcedure(item);
+        let content = generator.storedProcedure(item, sett);
         content += generator.permissions(permissions, name);
 
-        file.write(config.output.procs, name, content);
+        file.write(sett.output.procs, name, content);
       });
     // views
     objects
       .filter((item) => item.type.trim() === 'V')
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
-        const content = generator.view(item);
+        const content = generator.view(item, sett);
 
-        file.write(config.output.views, name, content);
+        file.write(sett.output.views, name, content);
       });
 
     // functions
@@ -162,9 +162,9 @@ export default class Pull {
       .filter((item) => ['TF', 'IF', 'FN'].indexOf(item.type.trim()) !== -1)
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
-        const content = generator.function(item);
+        const content = generator.function(item, sett);
 
-        file.write(config.output.functions, name, content);
+        file.write(sett.output.functions, name, content);
       });
 
     // triggers
@@ -172,9 +172,9 @@ export default class Pull {
       .filter((item) => item.type.trim() === 'TR')
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
-        const content = generator.trigger(item);
+        const content = generator.trigger(item, sett);
 
-        file.write(config.output.triggers, name, content);
+        file.write(sett.output.triggers, name, content);
       });
 
     // tables
@@ -185,10 +185,11 @@ export default class Pull {
         columns,
         primaryKeys,
         foreignKeys,
-        indexes
+        indexes,
+        sett
       );
 
-      file.write(config.output.tables, name, content);
+      file.write(sett.output.tables, name, content);
     });
 
     // types
@@ -196,9 +197,9 @@ export default class Pull {
       .filter((item) => !item.type)
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
-        const content = generator.type(item);
+        const content = generator.type(item, sett);
 
-        file.write(config.output.types, name, content);
+        file.write(sett.output.types, name, content);
       });
 
     // table types
@@ -206,17 +207,17 @@ export default class Pull {
       .filter((item) => item.type && item.type.trim() === 'TT')
       .forEach((item) => {
         const name = `${item.schema}.${item.name}.sql`;
-        const content = generator.tableType(item, columns);
+        const content = generator.tableType(item, columns, sett);
 
-        file.write(config.output.types, name, content);
+        file.write(sett.output.types, name, content);
       });
 
     // data
     data.forEach((item) => {
       const name = `${item.schema}.${item.name}.sql`;
-      const content = generator.data(item);
+      const content = generator.data(item, sett);
 
-      file.write(config.output.data, name, content);
+      file.write(sett.output.data, name, content);
     });
 
     // jobs
@@ -224,9 +225,9 @@ export default class Pull {
       const steps = jobSteps.filter((x) => x.job_id === item.job_id);
       const schedules = jobSchedules.filter((x) => x.job_id === item.job_id);
       const name = `${item.name}.sql`;
-      const content = generator.job(item, steps, schedules);
+      const content = generator.job(item, steps, schedules, sett);
 
-      file.write(config.output.jobs, name, content);
+      file.write(sett.output.jobs, name, content);
     });
 
     const msg = file.finalize();
