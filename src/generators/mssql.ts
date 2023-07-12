@@ -148,9 +148,19 @@ export default class MSSQLGenerator {
 
     switch (sett.idempotency.procs) {
       case 'if-exists-drop':
-        output += `IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('${objectId}') AND type = '${type}')`;
+        output += `IF EXISTS (`; 
         output += EOL;
-        output += `DROP PROCEDURE ${objectId}`;
+        output += `   SELECT 1`; 
+        output += EOL;
+        output += `   FROM sys.objects`; 
+        output += EOL;
+        output += `   WHERE object_id = OBJECT_ID('${objectId}')`; 
+        output += EOL;
+        output += `     AND type = '${type}'`;
+        output += EOL;
+        output += `   )`;
+        output += EOL;
+        output += ` DROP PROCEDURE ${objectId}`;
         output += EOL;
         output += 'GO';
         output += EOL;
@@ -167,7 +177,17 @@ export default class MSSQLGenerator {
         output += EOL;
         break;
       case 'if-not-exists':
-        output += `IF NOT EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('${objectId}') AND type = '${type}')`;
+        output += `IF NOT EXISTS (`;
+        output += EOL;
+        output += `   SELECT 1`;
+        output += EOL;
+        output += `   FROM sys.objects`;
+        output += EOL;
+        output += `   WHERE object_id = OBJECT_ID('${objectId}')`; 
+        output += EOL;
+        output += `     AND type = '${type}'`;
+        output += EOL;
+        output += `   )`;
         output += EOL;
         break;
     }
@@ -229,7 +249,11 @@ export default class MSSQLGenerator {
 
     for (let i = 0; i < item.length; i++) {
       const element = item[i];
-      output += `GRANT EXECUTE ON [${name}] TO [${element.principal_name}]`;
+      output += `GRANT EXECUTE`
+      output += EOL;
+      output += `ON[${name}]`
+      output += EOL;
+      output += `TO[${ element.principal_name }]`;
       output += EOL;
       output += `GO`;
       output += EOL;
