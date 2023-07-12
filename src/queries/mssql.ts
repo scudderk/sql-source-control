@@ -226,11 +226,10 @@ export const objectRead = (type: string, name: string) => {
           CAST(sc_inner.text AS varchar(max))
         FROM
           sys.objects so_inner
-          INNER JOIN syscomments sc_inner ON sc_inner.id = so_inner.object_id
-          INNER JOIN sys.schemas s_inner ON s_inner.schema_id = so_inner.schema_id
+		  CROSS APPLY(SELECT TOP 1 [text] FROM syscomments WHERE id = so_inner.object_id) sc_inner
         WHERE
           so_inner.name = so.name
-          AND s_inner.name = s.name
+          AND s.name = s.name
         FOR XML PATH(''), TYPE
       ).value('(./text())[1]', 'varchar(max)')
       ,1
@@ -239,8 +238,7 @@ export const objectRead = (type: string, name: string) => {
     ) AS [text]
   FROM
     sys.objects so
-    INNER JOIN syscomments sc ON sc.id = so.object_id AND so.type in ('P', 'V', 'TF', 'IF', 'FN', 'TR')
-    INNER JOIN sys.schemas s ON s.schema_id = so.schema_id
+    CROSS APPLY(SELECT TOP 1 [name] FROM sys.schemas WHERE schema_id = so.schema_id) s
   WHERE so.type = '${type}' AND so.name = '${name}'
   GROUP BY
     so.name,
