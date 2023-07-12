@@ -43,12 +43,6 @@ ssc --help
 **Note**: Make sure to enable TCP/IP in "SQL Server Network Configuration" settings ([instructions](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/enable-or-disable-a-server-network-protocol?view=sql-server-2017#to-enable-a-server-network-protocol)).
 If TCP/IP is not enabled, you may receive a "failed to connect" error on commands.
 
-Start the day by running, this will start the watch over all your source controlled database folders.
-
-```bash
-ssc start
-```
-
 ### `ssc init`
 
 This will ask you a bunch of questions, and then write a config file for you.
@@ -64,6 +58,29 @@ Options:
 | `--force`     | `-f`  | `boolean` | Overwrite an existing config file, if present.  | n/a     |
 | `--skip`      | `-s`  | `boolean` | Use defaults and not prompt you for any options | n/a     |
 | `--webconfig` | `-w`  | `string`  | Relative path to a `Web.config` file.           | n/a     |
+
+### `ssc start`
+
+Start the day by running, this will start the watch over all your source controlled database folders.
+
+```bash
+ssc start
+```
+### `ssc bash`
+
+To increase the version ssc is uploading to, just run the `bump` command with the new version parameter
+
+```bash
+ssc bump
+```
+
+Options:
+
+| Option        | Alias | Type      | Description                                     | Default |
+| ------------- | ----- | --------- | ----------------------------------------------- | ------- |
+| `--newversion`     | `-nv`  | `string` | Specific the new version you wish to set for the connection  | n/a     |
+| `--conn`      | `-c`  | `string` | The name of the connection you wish to update | n/a     |
+
 
 ### `ssc list`
 
