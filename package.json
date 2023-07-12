@@ -75,7 +75,7 @@
     "@types/cli-table": "^0.3.1",
     "@types/filenamify": "^2.0.2",
     "@types/fs-extra": "^11.0.1",
-    "@types/glob": "^8.0.1",
+    "@types/glob": "^8.1.0",
     "@types/inquirer": "^9.0.3",
     "@types/jest": "^29.5.3",
     "@types/mock-fs": "^4.13.1",
