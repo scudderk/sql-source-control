@@ -193,7 +193,7 @@ export default class Init {
         password: answers.password,
       },
       output: {
-        root: answers.path,
+        root: answers.root,
         procs: answers.procs,
         data: answers.data,
         functions: answers.functions,
