@@ -242,10 +242,7 @@ export default class Init {
       },
       includeConstraintName: true,
       loadFromObject: null,
-      loadFromString: null,
-      getRoot: function (): string {
-        throw new Error('Function not implemented.');
-      }
+      loadFromString: null
     };
 
     if (answers.path === PathChoices.ConnsConfig) {

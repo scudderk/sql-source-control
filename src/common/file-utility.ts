@@ -157,7 +157,7 @@ export default class FileUtility {
    * @param file File path to normalize.
    */
   private normalize(file: string) {
-    const root = this.sett.getRoot();
+    const root = this.sett.output.root;
 
     if (root.startsWith('./') && !file.startsWith('./')) {
       file = `./${file}`;
@@ -170,7 +170,7 @@ export default class FileUtility {
    * Load existing files and cache for comparison.
    */
   private load() {
-    this.existingFiles = glob.sync(`${this.sett.getRoot()}/**/*.sql`);
+    this.existingFiles = glob.sync(`${this.sett.output.root}/**/*.sql`);
     this.existingCache.load();
   }
 

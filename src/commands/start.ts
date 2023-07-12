@@ -51,7 +51,6 @@ export default class Start {
           return new sql.ConnectionPool(sett.connection)
             .connect()
             .then((pool) => {
-              console.log(pool)
               const queries: any[] = [
                 pool.request().query(objectRead(type, storedProcedureName)),
                 pool.request().query(permissionsRead),
@@ -100,12 +99,15 @@ function writeFiles(
     ? results[1].recordset
     : [];
 
+  console.log('results: ', results)
+  
   const generator = new MSSQLGenerator(config);
   const file = new FileUtility(config, sett);
   let content: string;
   switch (type) {
     // stored procedures
     case 'P':
+      console.log(name)
       name = `${name}.sql`;
       content = generator.storedProcedure(objects[0], sett);
       content += generator.permissions(permissions, name.split('.')[0]);

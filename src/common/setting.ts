@@ -133,16 +133,4 @@ export default class Setting implements ISetting {
 
     Object.assign(this, sett);
   }
-  /**
-   * Get root output directory.
-   */
-  getRoot() {
-    let root = this.output.root;
-
-    if (!root || root === '.') {
-      root = './';
-    }
-
-    return root;
-  }
 }

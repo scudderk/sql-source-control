@@ -101,7 +101,7 @@ export default class Push {
 
     directories.forEach((dir) => {
       if (dir) {
-        const files = glob.sync(`${setting.getRoot()}/${dir}/**/*.sql`);
+        const files = glob.sync(`${setting.output.root}/${dir}/**/*.sql`);
         output.push(...files);
       }
     });
