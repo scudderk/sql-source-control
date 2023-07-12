@@ -33,6 +33,16 @@ export interface IConnection {
   user: string;
   password: string;
 }
+export class Connection implements IConnection {
+
+  public constructor(
+    public server: string,
+    public database: string,
+    public port: number,
+    public user: string,
+    public password: string,
+  ) { }
+}
 
 /**
  * setting object properties.
