@@ -26,6 +26,7 @@ export default class Init {
     return prompt(this.getQuestions(sett, !!webConfigConns))
       .then((answers) => this.writeFiles(answers));
     return console.error('Code needs to be amended!');
+        this.createFolderIfNotExists(`${sett.output.root}\\${sett.output.temps}`);
   }
 
   /**
@@ -231,4 +232,12 @@ export default class Init {
       Config.write({ settings: [sett] });
     }
   }
+  private createFolderIfNotExists = (folderPath: string) => {
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath);
+      console.log(`Folder created: ${folderPath}`);
+    } else {
+      console.log(`Folder already exists: ${folderPath}`);
+    }
+  };
 }
