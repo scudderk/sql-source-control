@@ -23,6 +23,13 @@ export interface PullOptions {
 }
 
 /**
+ * CLI arguments for `start` command.
+ */
+export interface StartOptions {
+  config?: string;
+}
+
+/**
  * CLI arguments for `pull-single` command.
  */
 export interface PullSingleOptions {
@@ -37,4 +44,12 @@ export interface PullSingleOptions {
 export interface PushOptions {
   config?: string;
   skip?: boolean;
+}
+
+/**
+ * CLI arguments for `bump` command.
+ */
+export interface BumpOptions {
+  newversion?: string;
+  conn?: string;
 }

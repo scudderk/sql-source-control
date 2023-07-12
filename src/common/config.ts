@@ -46,6 +46,29 @@ export default class Config implements IConfig {
   }
 
   /**
+   * Update a config file with provided configuration.
+   *
+   * @param settings Settings to update config with.
+   * @param file Configuration file to write to.
+   */
+  static update(settings: Setting[], file?: string) {
+    const config: IConfig = new Config();
+    config.settings = settings;
+    const configFile = path.join(
+      process.cwd(),
+      file || Config.defaultConfigFile
+    );
+    const content = JSON.stringify(config, null, 2);
+
+    fs.outputFile(configFile, content, (error) => {
+      if (error) {
+        return console.error(error);
+      }
+      console.log('Config file updated!');
+    });
+  }
+
+  /**
    * Check if default configuration file exists.
    */
   static doesDefaultExist() {

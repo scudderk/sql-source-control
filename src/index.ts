@@ -4,6 +4,7 @@ import updateNotifier from 'update-notifier';
 import pkg = require('../package.json');
 import Init from './commands/init';
 import {
+  BumpOptions,
   InitOptions,
   ListOptions,
   PullOptions,
@@ -15,6 +16,7 @@ import Pull from './commands/pull';
 import PullSingle from './commands/pull-single';
 import Push from './commands/push';
 import Start from './commands/start';
+import Bump from './commands/bump';
 
 async function main() {
   program
@@ -45,6 +47,14 @@ async function main() {
     )
     .action(() => {
       const action = new Start();
+  program
+    .command('bump')
+    .alias('b')
+    .description('Increase the version number that ssc outputs to.')
+    .requiredOption('-nv, --newversion [value]', 'New version you wish to set for the connection')
+    .requiredOption('-c, --conn [value]', 'The name of the connection you wish to update')
+    .action((options: BumpOptions) => {
+      const action = new Bump(options);
       return action.invoke();
     });
   
@@ -84,6 +94,5 @@ async function main() {
   await program.parseAsync(process.argv);
 }
 
-// init
 updateNotifier({ pkg } as any).notify();
 main();
