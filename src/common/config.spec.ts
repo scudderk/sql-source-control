@@ -1,6 +1,6 @@
 import mock from 'mock-fs';
 import Config from './config';
-import { IConnection, IdempotencyConfig, IOption, OutputConfig } from './interfaces';
+import { IConnection, IdempotencyConfig, OutputConfig } from './interfaces';
 
 describe('Config class', () => {
   const name = 'dev';
@@ -9,11 +9,6 @@ describe('Config class', () => {
   const database = 'awesome-db';
   const user = 'example';
   const password = 'qwerty';
-  const option: IOption = {
-    enableArithAbort: true,
-    cryptoCredentialsDetails: {minVersion: ''},
-    encrypt: false
-  };
   const connection: IConnection = {
     database,
     password,
@@ -32,11 +27,6 @@ describe('Config class', () => {
 
   afterAll(() => {
     mock.restore();
-  });
-
-  describe('write method', () => {
-    it('should write to default file', () => {
-    });
   });
 
   describe('doesDefaultExist method', () => {

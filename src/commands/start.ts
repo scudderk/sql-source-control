@@ -1,12 +1,11 @@
 import sql from 'mssql';
-import multimatch from 'multimatch';
 import path from 'path';
 import Config from '../common/config';
 import Setting from '../common/setting';
 import fs from 'fs';
 import chokidar from 'chokidar';
 import { StartOptions } from './interfaces';
-import { SqlObject, SqlPermissions, SqlTable } from '../queries/interfaces';
+import { SqlObject, SqlPermissions } from '../queries/interfaces';
 import { objectRead, permissionsRead } from '../queries/mssql';
 import MSSQLGenerator from '../generators/mssql';
 import FileUtility from '../common/file-utility';
@@ -38,10 +37,10 @@ export default class Start {
       chokidar
         .watch(temps, { ignored: /^\./, persistent: true })
         .on('add', function (path) {
-          let pathArray = path.split('\\');
-          let fileArray = pathArray[pathArray.length - 1].split('.');
-          let storedProcedureName = fileArray[0];
-          let type = fileArray[1];
+          const pathArray = path.split('\\');
+          const fileArray = pathArray[pathArray.length - 1].split('.');
+          const storedProcedureName = fileArray[0];
+          const type = fileArray[1];
           console.log(
             'Stored Procedure',
             storedProcedureName,
@@ -59,7 +58,7 @@ export default class Start {
               ];
               return Promise.all<sql.IResult<any>>(queries)
                 .then((results) => {
-                  const tables: sql.IRecordSet<SqlTable> = results[1].recordset;
+                  results[1].recordset;
                   return results;
                 })
                 .then((results) => {

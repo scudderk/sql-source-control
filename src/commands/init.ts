@@ -6,7 +6,6 @@ import Config from '../common/config';
 import Setting from '../common/setting';
 import { PathChoices } from './eums';
 import { InitOptions } from './interfaces';
-import { Connection, IConnection } from '../common/interfaces';
 
 export default class Init {
   constructor(private options: InitOptions) { }
@@ -15,22 +14,13 @@ export default class Init {
    * Invoke action.
    */
   invoke() {
-    const webConfigConns = Config.getConnectionsFromWebConfig(
-      this.options.webconfig
-    );
-    const sett = new Setting();
-
-    if (!this.options.force && Config.doesDefaultExist()) {
-      // don't overwrite existing config file
-      return console.error('Config file already exists!');
-    }
     const prompt = inquirer.createPromptModule();
-    return prompt(this.getQuestions(!!webConfigConns))
+    return prompt(this.getQuestions(false))
       .then((answers) => {
         const sett: Setting = this.writeFiles(answers);
         this.createFolderIfNotExists(`${sett.output.root}\\${sett.output.temps}`);
         // connect to db
-        const sqlConn = new sql.ConnectionPool(sett.connection)
+        new sql.ConnectionPool(sett.connection)
           .connect()
           .then((pool) => {
             pool.request().query(dropTriggerWrite).then(() => {
@@ -242,8 +232,7 @@ export default class Init {
       }
     };
 
-    if (answers.path === PathChoices.WebConfig) {
-    } else if (answers.path === PathChoices.ConnsConfig) {
+    if (answers.path === PathChoices.ConnsConfig) {
       Config.write({ settings: [sett] }, Config.defaultConnectionsJsonFile);
     } else {
       Config.write({ settings: [sett] });

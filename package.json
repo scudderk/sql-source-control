@@ -30,6 +30,7 @@
     "docker:down": "docker-compose down",
     "docker:reset": "run-s \"docker:down -- -v\" docker:up",
     "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "eslint --fix . --ext .js,.ts",
     "build": "tsc -p ./tsconfig.json",
     "prepublishOnly": "npm run build",
     "release": "standard-version",

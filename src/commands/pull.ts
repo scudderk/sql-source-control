@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 import * as sql from 'mssql';
-import multimatch from 'multimatch';
 import ora from 'ora';
 
 import Config from '../common/config';
@@ -82,7 +81,7 @@ export default class Pull {
 
         return Promise.all<sql.IResult<any>>(queries)
           .then((results) => {
-            const tables: sql.IRecordSet<SqlTable> = results[1].recordset;
+            results[1].recordset;
             return results;
           })
           .then((results) => {

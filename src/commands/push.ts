@@ -21,7 +21,6 @@ export default class Push {
    * Invoke actions.
    */
   invoke() {
-    const config = new Config(this.options.config);
     const prompt = inquirer.createPromptModule();
     return prompt<inquirer.Answers>([
       {

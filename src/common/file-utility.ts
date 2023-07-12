@@ -4,14 +4,13 @@ import * as eol from 'eol';
 import filenamify from 'filenamify';
 import * as fs from 'fs-extra';
 import * as glob from 'glob';
-import multimatch from 'multimatch';
 import * as path from 'path';
 
 import Cache from './cache';
 import Config from './config';
 import { OperationCounts } from './interfaces';
 import Setting from './setting';
-var async = require('async');
+const async = require('async');
 import MSSQLGenerator from '../generators/mssql';
 
 /**
@@ -180,17 +179,17 @@ export default class FileUtility {
    *
    */
   writeUpdate(generator: MSSQLGenerator, file: FileUtility) {
-    let storedProcedureDirectory = path.join(
+    const storedProcedureDirectory = path.join(
       this.sett.output.root,
       this.sett.currentVersion,
       'stored-procedures'
     );
-    let functionDirectory = path.join(
+    const functionDirectory = path.join(
       this.sett.output.root,
       this.sett.currentVersion,
       'functions'
     );
-    let filesDestinationDirectory = path.join(
+    const filesDestinationDirectory = path.join(
       this.sett.output.root,
       this.sett.currentVersion,
       'Upgrade ' + this.sett.currentVersion + ' - 3 Objects.sql'
@@ -202,9 +201,9 @@ export default class FileUtility {
     if (!fs.existsSync(functionDirectory)) {
       fs.mkdirSync(functionDirectory);
     }
-    const myPromise = new Promise((resolve, reject) => {
+    new Promise((resolve, _reject) => {
       if (this.sett.output.procs != false) {
-        const myPromise = new Promise((resolve, reject) => {
+        new Promise((resolve, reject) => {
           fs.readdir(storedProcedureDirectory, (err, filenames) => {
             if (err) {
               console.log(err);
@@ -215,8 +214,8 @@ export default class FileUtility {
                 `UpgradeAudit_${this.sett.currentVersion}_Object.sql`
               )
             ) {
-              let upgradeAuditName = `UpgradeAudit.sql`;
-              let content = generator.upgradeAudit(
+              const upgradeAuditName = `UpgradeAudit.sql`;
+              const content = generator.upgradeAudit(
                 this.sett.name,
                 this.sett.currentVersion,
                 'Object'
@@ -288,11 +287,6 @@ export default class FileUtility {
       .catch((err) => {
         console.error(err);
       });
-
-    if (this.sett.output.procs != false) {
-    }
-    if (this.sett.output.functions != false) {
-    }
   }
   private mergeArrays = function (arr1, arr2) {
     if (arr2.length == 1) {

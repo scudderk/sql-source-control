@@ -80,8 +80,8 @@ export default class Config implements IConfig {
    *
    * @param file Relative path to Web.config file.
    */
-  static getConnectionsFromWebConfig(file?: string) {
-    const conns: string = '';
+  static getConnectionsFromWebConfig() {
+    const conns = '';
     //   return conns.length ? conns : undefined;
     return conns;
   }
