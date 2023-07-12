@@ -91,12 +91,12 @@ export default class MSSQLGenerator {
    * @param version current software version.
    * @param type script types.
    */
-  upgradeAudit(version: string, type: string) {
+  upgradeAudit(name: string, version: string, type: string) {
     let output = '';
 
     output += `-- ************************** UPGRADE AUDIT ********************************`;
     output += EOL;
-    output += `INSERT INTO UpgradeAudit (ScriptName) VALUES ('Harmonia Upgrade ${version} - 3 ${type}.sql')`;
+    output += `INSERT INTO UpgradeAudit (ScriptName) VALUES ('${name} Upgrade ${version} - 3 ${type}.sql')`;
     output += EOL;
     output += `GO`;
     output += EOL;
