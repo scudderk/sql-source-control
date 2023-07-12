@@ -63,7 +63,7 @@
     "inquirer": "^9.1.4",
     "mssql": "^9.1.1",
     "multimatch": "^6.0.0",
-    "ora": "^6.1.2",
+    "ora": "^6.3.1",
     "safe-buffer": "^5.2.1",
     "tedious": "^16.2.0",
     "ts-util-is": "^2.0.2",
