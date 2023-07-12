@@ -13,3 +13,8 @@ node_modules/
 ssc.json
 ssc-*.json
 Web.config
+debug.log
+src/commands/debug.log
+src/common/debug.log
+src/debug.log
+src/queries/debug.log
