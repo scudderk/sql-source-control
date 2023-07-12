@@ -7,7 +7,7 @@
     "outDir": "dist",
     "noImplicitAny": false,
     "sourceMap": true,
-    "target": "es5"
+    "target": "esnext"
   },
   "include": ["src/**/*.ts"]
 }
