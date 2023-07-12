@@ -207,7 +207,15 @@ export default class Init {
       },
       currentVersion: answers.currentVersion,
       idempotency: {
-        procs: "if-exists-drop"
+        procs: "if-exists-drop",
+        data: 'truncate',
+        functions: 'if-exists-drop',
+        jobs: 'if-exists-drop',
+        tables: 'if-exists-drop',
+        triggers: 'if-exists-drop',
+        types: 'if-exists-drop',
+        views: 'if-exists-drop',
+        temps: 'if-exists-drop',
       },
       includeConstraintName: true,
       loadFromObject: null,
