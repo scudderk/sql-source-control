@@ -158,7 +158,7 @@ export default class FileUtility {
    * @param file File path to normalize.
    */
   private normalize(file: string) {
-    const root = this.config.getRoot();
+    const root = this.sett.getRoot();
 
     if (root.startsWith('./') && !file.startsWith('./')) {
       file = `./${file}`;
@@ -171,68 +171,118 @@ export default class FileUtility {
    * Load existing files and cache for comparison.
    */
   private load() {
-    this.existingFiles = glob.sync(`${this.config.getRoot()}/**/*.sql`);
+    this.existingFiles = glob.sync(`${this.sett.getRoot()}/**/*.sql`);
     this.existingCache.load();
   }
 
   /**
    * Write update file to the file system.
-  *
-  */
-  writeUpdate (generator: MSSQLGenerator, file: FileUtility) {
-    let storedProcedureDirectory = path.join(this.sett.output.root, this.sett.currentVersion, 'stored-procedures')
-    let functionDirectory = path.join(this.sett.output.root, this.sett.currentVersion, 'function')
-    let filesDestinationDirectory = path.join(this.sett.output.root, this.sett.currentVersion, 'Upgrade ' + this.sett.currentVersion + ' - 3 Objects.sql');
+   *
+   */
+  writeUpdate(generator: MSSQLGenerator, file: FileUtility) {
+    let storedProcedureDirectory = path.join(
+      this.sett.output.root,
+      this.sett.currentVersion,
+      'stored-procedures'
+    );
+    let functionDirectory = path.join(
+      this.sett.output.root,
+      this.sett.currentVersion,
+      'functions'
+    );
+    let filesDestinationDirectory = path.join(
+      this.sett.output.root,
+      this.sett.currentVersion,
+      'Upgrade ' + this.sett.currentVersion + ' - 3 Objects.sql'
+    );
     let files = [];
-  
+    if (!fs.existsSync(storedProcedureDirectory)) {
+      fs.mkdirSync(storedProcedureDirectory);
+    }
+    if (!fs.existsSync(functionDirectory)) {
+      fs.mkdirSync(functionDirectory);
+    }
     const myPromise = new Promise((resolve, reject) => {
-        if (this.sett.output.procs != false) {
+      if (this.sett.output.procs != false) {
+        const myPromise = new Promise((resolve, reject) => {
           fs.readdir(storedProcedureDirectory, (err, filenames) => {
             if (err) {
-                console.log(err);
-                return reject(err);
+              console.log(err);
+              return reject(err);
             }
-            if (!filenames.includes(`UpgradeAudit_${this.sett.currentVersion}_Object.sql`)) {
+            if (
+              !filenames.includes(
+                `UpgradeAudit_${this.sett.currentVersion}_Object.sql`
+              )
+            ) {
               let upgradeAuditName = `UpgradeAudit.sql`;
-              let content = generator.upgradeAudit(this.sett.currentVersion, 'Object');
-              file.write(`${this.sett.currentVersion}/${this.sett.output.procs}`, upgradeAuditName, content);
+              let content = generator.upgradeAudit(
+                this.sett.name,
+                this.sett.currentVersion,
+                'Object'
+              );
+              file.write(
+                `${this.sett.currentVersion}/${this.sett.output.procs}`,
+                upgradeAuditName,
+                content
+              );
             }
-          })
-          fs.readdir(storedProcedureDirectory, (err, filenames) => {
-              files = this.mergeArrays(files, filenames.map(file => path.join(storedProcedureDirectory, file)));
-              resolve(files);
+            return(files);
           });
-        }
+        }).then((files: []) => {
+          fs.readdir(storedProcedureDirectory, (err, filenames) => {
+            files = this.mergeArrays(
+              files,
+              filenames.map((file) => path.join(storedProcedureDirectory, file))
+            );
+            console.log('mergearrays resolve', files);
+            resolve(files);
+          });
+        });
+        console.log('resolve', files);
+        return files;
+      }
     })
-    .then(() => {
+      .then(() => {
         if (this.sett.output.functions != false) {
-            fs.readdir(functionDirectory, (err, filenames) => {
-                if (err) {
-                    console.error(err);
-                }
-                files = this.mergeArrays(files, filenames.map(file => path.join(functionDirectory, file)));
-                return files;
-            });
-        }
-    })
-    //.then(handleFulfilledB)
-    //.then(handleFulfilledC)
-    .catch((err) => { console.error(err); })
-    .finally(() => {
-        async.map(files, fs.readFile, (err, results) => {
+          console.log(files);
+          fs.readdir(functionDirectory, (err, filenames) => {
             if (err) {
+              console.error(err);
+            }
+            files = this.mergeArrays(
+              files,
+              filenames.map((file) => path.join(functionDirectory, file))
+            );
+            console.log('in', files);
+            return files;
+          });
+          console.log('out', files);
+        }
+        console.log(files);
+      })
+      .finally(() => {
+        console.log('finally')
+        async.map(files, fs.readFile, (err, results) => {
+          console.table(files);
+          if (err) {
+            console.error(err);
+            return err;
+          }
+          //Write the joined results to destination
+          fs.writeFile(
+            filesDestinationDirectory,
+            results.join('\n\n\n\n'),
+            (err) => {
+              if (err) {
                 console.error(err);
                 return err;
+              }
+              console.log(
+                chalk.bgMagenta.black.bold('\nUpdate file has been generated.')
+              );
             }
-            //Write the joined results to destination
-            fs.writeFile(filesDestinationDirectory, results.join("\n\n\n\n"), (err) => {
-                if (err) {
-                    console.error(err);
-                    return err;
-                }
-                console.log(chalk.bgMagenta.black.bold('\nUpdate file has been generated.'));
-                // resolve();
-            });
+          );
         });
       })
       .catch((err) => {
@@ -247,12 +297,11 @@ export default class FileUtility {
   private mergeArrays = function (arr1, arr2) {
     if (arr2.length == 1) {
       arr1.push(arr2[0]);
-    }
-    else if (arr2.length > 1) {
+    } else if (arr2.length > 1) {
       arr2.forEach(function (item) {
         arr1.push(item);
       });
     }
     return arr1;
-  }
+  };
 }
