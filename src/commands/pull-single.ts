@@ -132,7 +132,7 @@ function writeFiles(
       break;
   }
 
-  file.writeUpdate(generator, file);
+  file.writeUpdate(generator);
   const msg = file.finalize();
   console.log(msg);
 }

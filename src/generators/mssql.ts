@@ -251,9 +251,9 @@ export default class MSSQLGenerator {
       const element = item[i];
       output += `GRANT EXECUTE`
       output += EOL;
-      output += `ON[${name}]`
+      output += ` ON[${name}]`
       output += EOL;
-      output += `TO[${ element.principal_name }]`;
+      output += ` TO[${ element.principal_name }]`;
       output += EOL;
       output += `GO`;
       output += EOL;

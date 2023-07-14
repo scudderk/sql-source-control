@@ -86,7 +86,7 @@ export default class Start {
     });
   }
 }
-function writeFiles(
+async function writeFiles(
   config: Config,
   sett: Setting,
   results: any[],
@@ -99,15 +99,12 @@ function writeFiles(
     ? results[1].recordset
     : [];
 
-  console.log('results: ', results)
-  
   const generator = new MSSQLGenerator(config);
   const file = new FileUtility(config, sett);
   let content: string;
   switch (type) {
     // stored procedures
     case 'P':
-      console.log(name)
       name = `${name}.sql`;
       content = generator.storedProcedure(objects[0], sett);
       content += generator.permissions(permissions, name.split('.')[0]);
@@ -137,8 +134,5 @@ function writeFiles(
     default:
       break;
   }
-  
-  file.writeUpdate(generator, file);  
-  const msg = file.finalize();
-  console.log(msg);
+  await file.writeUpdate(generator);  
 }
