@@ -1,6 +1,6 @@
 {
   "name": "sql-source-control-psl",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Simple CLI for getting SQL into source control systems.",
   "keywords": [
     "sql",
